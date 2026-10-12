@@ -40,7 +40,23 @@ Les fichiers autorisés pour les pièces jointes sont PDF, PNG, JPEG et CSV, ave
 
 ## Mode de démonstration sans authentification
 
-À la demande du projet, l’authentification est suspendue pour le prototype : les pages métier sont accessibles sans session et l’en-tête affiche explicitement un utilisateur de démonstration. Ce mode ne doit pas être utilisé pour des données réelles, des déploiements de production ou des écritures sensibles. Les services serveur et les règles d’autorisation restent présents pour préparer la réactivation d’un contrôle d’accès réel.
+Le mode sans connexion est contrôlé exclusivement par `QMS_DEMO_NO_AUTH=true`. Il est désactivé par défaut et refusé impérativement lorsque `NODE_ENV=production`; il n’est donc pas activé implicitement en Preview ou en Production. Lorsque le flag est actif hors production, les pages métier sont accessibles sans session et l’écran de connexion redirige vers le tableau de bord.
+
+Les services serveur continuent d’exiger Better Auth et leurs permissions pour toute écriture métier : le mode démo ne crée aucune identité, ne confère aucun rôle QMS et n’expose aucun contournement API. Les fonctions de mutation restent donc indisponibles sans session réelle. Les contrôles de validation, de cohérence, d’organisation et de journalisation restent présents pour la réactivation future.
+
+### Validation de l’incrément
+
+- `pnpm typecheck` : réussi.
+- `pnpm lint` : réussi.
+- `pnpm test` : réussi — 7 fichiers, 25 tests, dont les tests d’activation explicite et de refus impératif en production.
+- `QMS_DEMO_NO_AUTH=true pnpm build` : réussi.
+- Vérification navigateur du serveur flagué : non concluante dans cette session, car le routage du navigateur a renvoyé vers le serveur déjà actif sur le port 3000 au lieu du serveur de vérification sur port 3001. Les tests unitaires et le build couvrent le comportement de configuration ; aucune conclusion de production n’en est déduite.
+
+Aucune migration ni écriture Neon n’a été exécutée.
+
+## Réactivation future de Better Auth
+
+Supprimer ou désactiver `QMS_DEMO_NO_AUTH` dans l’environnement concerné, vérifier que `NODE_ENV` n’est pas utilisé pour contourner le contrôle, puis redéployer. Les pages repasseront par `auth.api.getSession`; les mutations continueront à passer par `requirePermission`. Aucun schéma ou rôle n’a besoin d’être recréé.
 
 ## Limites restantes
 
