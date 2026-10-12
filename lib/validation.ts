@@ -1,5 +1,0 @@
-import { z } from 'zod'
-
-export const complianceEvaluationInput = z.object({ requirementId: z.string().uuid(), scope: z.string().trim().min(1).max(200), evaluatedOn: z.string().date(), status: z.enum(['NOT_ASSESSED', 'COMPLIANT', 'PARTIALLY_COMPLIANT', 'NON_COMPLIANT', 'NOT_APPLICABLE']), justification: z.string().trim().min(1).max(2000), evidenceReference: z.string().trim().max(100).optional() }).superRefine((value, ctx) => { if (value.status === 'NOT_APPLICABLE' && value.justification.length < 10) ctx.addIssue({ code: 'custom', path: ['justification'], message: 'Une justification détaillée est requise.' }) })
-export const nonconformityInput = z.object({ reference: z.string().regex(/^NC-[A-Z0-9-]+$/), title: z.string().trim().min(3).max(200), factualDescription: z.string().trim().min(10).max(4000), severity: z.enum(['MINOR', 'MAJOR', 'CRITICAL']), detectedOn: z.string().date(), dueDate: z.string().date().optional() })
-export const correctiveActionTransition = z.object({ actionId: z.string().uuid(), nextStatus: z.enum(['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'EFFECTIVENESS_VERIFIED', 'CLOSED']), effectivenessResult: z.string().trim().max(2000).optional() })
