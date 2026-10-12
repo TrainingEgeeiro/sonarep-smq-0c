@@ -2,8 +2,8 @@ export const documentRevisionTransitions = {
   DRAFT: ['IN_REVIEW'],
   IN_REVIEW: ['APPROVED'],
   APPROVED: ['PUBLISHED'],
-  PUBLISHED: ['WITHDRAWN'],
-  WITHDRAWN: [],
+  PUBLISHED: ['OBSOLETE'],
+  OBSOLETE: [],
 } as const
 
 export type DocumentRevisionStatus = keyof typeof documentRevisionTransitions
@@ -17,6 +17,6 @@ export function requiredDocumentPermission(nextStatus: string) {
   if (nextStatus === 'IN_REVIEW') return 'documents.review'
   if (nextStatus === 'APPROVED') return 'documents.approve'
   if (nextStatus === 'PUBLISHED') return 'documents.publish'
-  if (nextStatus === 'WITHDRAWN') return 'documents.obsolete'
+  if (nextStatus === 'OBSOLETE') return 'documents.obsolete'
   return null
 }

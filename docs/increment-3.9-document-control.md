@@ -4,10 +4,10 @@
 
 - Registre des documents contrôlés accessible sur `/documents`, avec filtrage par statut, référence, propriétaire, version et prochaine revue.
 - Modèle versionné `controlled_document_revisions` : une révision est créée sans écraser l’historique.
-- Workflow serveur `DRAFT → IN_REVIEW → APPROVED → PUBLISHED → WITHDRAWN`.
+- Workflow serveur `DRAFT → IN_REVIEW → APPROVED → PUBLISHED → OBSOLETE`, avec motif de décision obligatoire.
 - Permissions dédiées pour revue, approbation, publication et obsolescence.
 - Séparation des rôles : l’auteur d’une révision ne peut pas l’approuver lui-même.
-- Modèle de preuves enrichi par `evidence_attachments` et `evidence_links`, avec rattachement organisationnel et contrôle de taille/type.
+- Modèle de preuves enrichi par `evidence_attachments` et `evidence_links`, avec rattachement organisationnel, contrôle de taille/type et clés de stockage obligatoirement privées (`private/`). Les liens couvrent audits, exigences, constats et actions correctives.
 - Journalisation des créations, transitions et enregistrements de pièces jointes dans `audit_events`.
 
 ## Fichiers modifiés
@@ -21,6 +21,9 @@
 - `components/qms-views.tsx`
 - `app/[...slug]/page.tsx`
 - `lib/document-control-rules.test.ts`
+- `lib/evidence-control.ts` — liens de preuves avec contrôle organisationnel et audit
+- `lib/demo-mode.test.ts` et `lib/demo-mode.ts` — mode démo déjà contrôlé par flag
+
 
 ## Schéma et sécurité
 
@@ -34,7 +37,7 @@ Les fichiers autorisés pour les pièces jointes sont PDF, PNG, JPEG et CSV, ave
 
 - `pnpm typecheck` : réussi.
 - `pnpm lint` : réussi.
-- `pnpm test` : réussi — 6 fichiers, 22 tests, dont les transitions documentaires et les permissions associées.
+- `pnpm test` : réussi — 7 fichiers, 26 tests, dont les transitions `OBSOLETE`, les permissions associées et la validation des pièces privées.
 - `pnpm build` : compilation et TypeScript réussis, collecte Next.js bloquée par `BETTER_AUTH_SECRET` absent/non exploitable dans l’environnement de build.
 - Vérification navigateur : route `/documents` redirige correctement vers `/sign-in` sans session ; aucune connexion réelle n’a été tentée.
 
@@ -60,4 +63,4 @@ Supprimer ou désactiver `QMS_DEMO_NO_AUTH` dans l’environnement concerné, v�
 
 ## Limites restantes
 
-La migration 0003 n’est pas appliquée à une base réelle, le stockage Blob privé n’est pas connecté et le formulaire visible du registre reste une surface de préparation tant qu’une cible autorisée et un stockage privé ne sont pas disponibles. L’accès administrateur de l’incrément 3.8.2 reste séparément bloqué ; il ne constitue pas un contournement pour le contrôle documentaire. L’incrément 3.10 n’est pas commencé.
+La migration 0003 n’est pas appliquée à une base réelle. Le stockage Blob privé n’est pas connecté : `lib/evidence-control.ts` fournit le contrat serveur, mais aucun upload ni téléchargement n’est simulé. Le formulaire visible du registre reste une surface de préparation tant qu’une cible autorisée et un stockage privé ne sont pas disponibles. L’accès administrateur de l’incrément 3.8.2 reste séparément bloqué ; il ne constitue pas un contournement pour le contrôle documentaire. L’incrément 3.10 n’est pas commencé.

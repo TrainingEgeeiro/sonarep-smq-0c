@@ -1,11 +1,11 @@
 -- Increment 3.9: document control, revisions, evidence attachments and links.
 -- Proposal only. Apply through the authorized Neon migration workflow; never run automatically.
-CREATE TYPE document_revision_status AS ENUM ('DRAFT', 'IN_REVIEW', 'APPROVED', 'PUBLISHED', 'WITHDRAWN');
+CREATE TYPE document_revision_status AS ENUM ('DRAFT', 'IN_REVIEW', 'APPROVED', 'PUBLISHED', 'OBSOLETE');
 CREATE TABLE controlled_document_revisions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), organization_id uuid NOT NULL REFERENCES organizations(id) ON DELETE RESTRICT,
   document_id uuid NOT NULL REFERENCES controlled_documents(id) ON DELETE RESTRICT, version varchar(32) NOT NULL,
   status document_revision_status NOT NULL, change_summary text NOT NULL, content_hash varchar(128), storage_key text,
-  submitted_at timestamptz, approved_at timestamptz, published_at timestamptz, withdrawn_at timestamptz,
+  submitted_at timestamptz, approved_at timestamptz, published_at timestamptz, obsolete_at timestamptz,
   approved_by uuid REFERENCES app_users(id) ON DELETE SET NULL, published_by uuid REFERENCES app_users(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT doc_revisions_org_document_version_unique UNIQUE (organization_id, document_id, version)

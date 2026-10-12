@@ -1,8 +1,8 @@
 import { and, eq } from 'drizzle-orm'
-import { auditEvents, controlledDocumentRevisions, controlledDocuments, evidence, evidenceAttachments } from './db/schema'
+import { auditEvents, controlledDocumentRevisions, controlledDocuments, evidence, evidenceAttachments, evidenceLinks } from './db/schema'
 import { getDb } from './db'
 import { AuthorizationError, requirePermission } from './authorization'
-import { controlledDocumentInput, documentRevisionInput, documentRevisionTransition, evidenceAttachmentInput, evidenceInput } from './validation'
+import { controlledDocumentInput, documentRevisionInput, documentRevisionTransition, evidenceAttachmentInput, evidenceInput, evidenceLinkInput } from './validation'
 import { canTransitionDocumentRevision, requiredDocumentPermission } from './document-control-rules'
 
 
@@ -39,9 +39,9 @@ export async function transitionDocumentRevision(input: unknown) {
   if (!current || !canTransitionDocumentRevision(current.status, value.nextStatus)) throw new Error('Transition documentaire non autorisée.')
   if (value.nextStatus === 'APPROVED' && current.createdBy === context.userId) throw new AuthorizationError('FORBIDDEN')
   const now = new Date()
-  const [updated] = await db.update(controlledDocumentRevisions).set({ status: value.nextStatus, submittedAt: value.nextStatus === 'IN_REVIEW' ? now : undefined, approvedAt: value.nextStatus === 'APPROVED' ? now : undefined, approvedBy: value.nextStatus === 'APPROVED' ? context.userId : undefined, publishedAt: value.nextStatus === 'PUBLISHED' ? now : undefined, publishedBy: value.nextStatus === 'PUBLISHED' ? context.userId : undefined, withdrawnAt: value.nextStatus === 'WITHDRAWN' ? now : undefined, updatedAt: now }).where(and(eq(controlledDocumentRevisions.id, value.revisionId), eq(controlledDocumentRevisions.organizationId, context.organizationId), eq(controlledDocumentRevisions.status, current.status))).returning()
+  const [updated] = await db.update(controlledDocumentRevisions).set({ status: value.nextStatus, submittedAt: value.nextStatus === 'IN_REVIEW' ? now : undefined, approvedAt: value.nextStatus === 'APPROVED' ? now : undefined, approvedBy: value.nextStatus === 'APPROVED' ? context.userId : undefined, publishedAt: value.nextStatus === 'PUBLISHED' ? now : undefined, publishedBy: value.nextStatus === 'PUBLISHED' ? context.userId : undefined,   obsoleteAt: value.nextStatus === 'OBSOLETE' ? now : undefined, updatedAt: now }).where(and(eq(controlledDocumentRevisions.id, value.revisionId), eq(controlledDocumentRevisions.organizationId, context.organizationId), eq(controlledDocumentRevisions.status, current.status))).returning()
   if (!updated) throw new Error('La révision a été modifiée entre sa lecture et sa mise à jour.')
-  await audit(context.organizationId, context.userId, `DOCUMENT_REVISION_${value.nextStatus}`, 'controlled_document_revision', updated.id, `Révision ${updated.version}: ${current.status} → ${value.nextStatus}`)
+  await audit(context.organizationId, context.userId, `DOCUMENT_REVISION_${value.nextStatus}`, 'controlled_document_revision', updated.id, `Révision ${updated.version}: ${current.status} → ${value.nextStatus}. Motif: ${value.decisionReason}`)
   return updated
 }
 
