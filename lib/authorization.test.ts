@@ -31,4 +31,18 @@ describe('moteur RBAC isolé', () => {
   it('ne fait jamais confiance à un rôle fourni par le client', () => {
     expect(() => requireClientRole('ORG_ADMIN')).toThrowError(AuthorizationError)
   })
+
+  it('ne confère jamais une permission inconnue à un rôle valide', () => {
+    const roles: QmsRole[] = ['ORG_ADMIN', 'QMS_MANAGER', 'QUALITY_OFFICER', 'AUDITOR', 'DOCUMENT_CONTROLLER', 'CONTRIBUTOR', 'VIEWER', 'QMS_ADMIN', 'QUALITY_MANAGER', 'COMPLIANCE_OWNER', 'PRODUCTION_MANAGER', 'ASSESSOR', 'ACTION_OWNER', 'INTERNAL_AUDITOR', 'EXECUTIVE_VIEWER', 'IT_SUPPORT']
+    for (const role of roles) expect(hasPermission(role, 'security.escalate')).toBe(false)
+  })
+
+  it('maintient les contrôles de séparation des responsabilités', () => {
+    expect(hasPermission('VIEWER', 'requirements.create')).toBe(false)
+    expect(hasPermission('QMS_MANAGER', 'documents.publish')).toBe(true)
+    expect(hasPermission('QMS_MANAGER', 'administration.members.manage')).toBe(false)
+    expect(hasPermission('ORG_ADMIN', 'administration.members.manage')).toBe(true)
+    expect(hasPermission('QUALITY_OFFICER', 'actions.close')).toBe(false)
+    expect(hasPermission('QUALITY_MANAGER', 'actions.close')).toBe(true)
+  })
 })

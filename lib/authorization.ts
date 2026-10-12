@@ -1,6 +1,5 @@
 import { and, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
-import { auth } from './auth'
 import { appUsers, roles, userRoles } from './db/schema'
 import { getDb } from './db'
 import { hasPermission, type QmsPermission, type QmsRole } from './governance'
@@ -23,6 +22,7 @@ export type AuthorizationContext = {
 }
 
 export async function getAuthorizationContext(requestHeaders?: Headers): Promise<AuthorizationContext | null> {
+  const { auth } = await import('./auth')
   const session = await auth.api.getSession({ headers: requestHeaders ?? (await headers()) })
   if (!session?.user) return null
 
