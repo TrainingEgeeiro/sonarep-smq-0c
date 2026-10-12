@@ -3,8 +3,9 @@ import { documentInputSchema, processInputSchema, processStatusChangeSchema, req
 
 describe("QMS validation rules", () => {
   it("requires a justification for non-applicable requirements", () => {
-    expect(requirementInputSchema.safeParse({ code: "R-1", title: "Test", status: "NOT_APPLICABLE" }).success).toBe(false)
-    expect(requirementInputSchema.safeParse({ code: "R-1", title: "Test", status: "NOT_APPLICABLE", justification: "Hors périmètre" }).success).toBe(true)
+    const base = { organizationId: "550e8400-e29b-41d4-a716-446655440000", sourceId: "550e8400-e29b-41d4-a716-446655440001", code: "R-1", title: "Test", category: "Management", status: "NOT_APPLICABLE" as const }
+    expect(requirementInputSchema.safeParse(base).success).toBe(false)
+    expect(requirementInputSchema.safeParse({ ...base, justification: "Hors périmètre" }).success).toBe(true)
   })
 
   it("requires an obsolescence reason", () => {
