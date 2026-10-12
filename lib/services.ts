@@ -1,8 +1,8 @@
 import { and, eq } from 'drizzle-orm'
-import { auditEvents, complianceEvaluations, correctiveActions, requirements } from './db/schema'
+import { auditEvents, complianceEvaluations, controlledDocumentRevisions, controlledDocuments, correctiveActions, evidence, evidenceAttachments, requirements } from './db/schema'
 import { getDb } from './db'
 import { AuthorizationError, requirePermission } from './authorization'
-import { complianceEvaluationInput, correctiveActionTransition } from './validation'
+import { complianceEvaluationInput, controlledDocumentInput, documentRevisionInput, documentRevisionTransition, evidenceAttachmentInput, evidenceInput, correctiveActionTransition } from './validation'
 
 export async function createComplianceEvaluation(input: unknown) {
   const context = await requirePermission('compliance.create')

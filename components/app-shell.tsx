@@ -3,8 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { authClient } from '@/lib/auth-client'
 import { Activity, AlertTriangle, BarChart3, Bell, BookOpen, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Clock3, FileCheck2, FileClock, FileText, Factory, FolderCheck, GraduationCap, LayoutDashboard, ListChecks, Menu, Search, Settings2, ShieldAlert, TriangleAlert, X } from 'lucide-react'
 import { navGroups, statusTone } from '@/lib/demo-data'
 
@@ -19,8 +17,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
-  const router = useRouter()
-  const { data: session } = authClient.useSession()
   const pageLabel = pathname === '/' ? 'Tableau de bord' : navGroups.flatMap((group) => group.items).find((item) => item.href === pathname)?.label || 'Vue métier'
   const currentGroup = navGroups.find((group) => group.items.some((item) => item.href === pathname))?.label || 'Pilotage'
   const searchHint = useMemo(() => pathname === '/' ? 'Rechercher dans le tableau de bord' : `Rechercher dans ${pageLabel.toLowerCase()}`, [pageLabel, pathname])
@@ -42,7 +38,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className={`app-content ${collapsed ? 'sidebar-collapsed' : ''}`}>
       <header className="app-header">
         <div className="flex min-w-0 items-center gap-3"><button className="mobile-menu md:hidden" onClick={() => setMobileOpen(true)} aria-label="Ouvrir la navigation"><Menu /></button><div className="breadcrumbs"><span>{currentGroup}</span><span className="breadcrumb-separator">/</span><strong>{pageLabel}</strong></div></div>
-        <div className="header-actions"><label className="search-box"><Search /><span className="sr-only">{searchHint}</span><input aria-label={searchHint} placeholder={searchHint} /></label><div className="relative"><button className="header-icon-button" onClick={() => setNotificationsOpen(!notificationsOpen)} aria-label="Ouvrir les notifications"><Bell /><span className="notification-dot">4</span></button>{notificationsOpen && <div className="notification-popover"><div className="flex items-center justify-between border-b border-slate-100 px-4 py-3"><strong>Notifications</strong><span className="text-xs text-slate-400">4 non lues</span></div><div className="flex flex-col gap-3 p-4 text-xs"><div><StatusBadge value="Critique" /><p className="mt-1 font-medium">Action corrective échue</p></div><div><StatusBadge value="Attention" /><p className="mt-1 font-medium">Révision documentaire proche</p></div></div><Link href="/notifications" className="block border-t border-slate-100 px-4 py-3 text-center text-xs font-semibold text-blue-700">Voir toutes les notifications</Link></div>}</div><button className="profile-chip" onClick={async () => { await authClient.signOut(); router.push('/sign-in'); router.refresh() }} aria-label="Se déconnecter"><div className="profile-avatar">{session?.user?.name?.slice(0, 2).toUpperCase() || 'DM'}</div><div className="hidden lg:block text-left"><div className="profile-name">{session?.user?.name || session?.user?.email || 'Utilisateur'}</div><div className="profile-role">Session authentifiée · Se déconnecter</div></div><ChevronDown className="hidden size-4 text-slate-400 lg:block" /></button></div>
+        <div className="header-actions"><label className="search-box"><Search /><span className="sr-only">{searchHint}</span><input aria-label={searchHint} placeholder={searchHint} /></label><div className="relative"><button className="header-icon-button" onClick={() => setNotificationsOpen(!notificationsOpen)} aria-label="Ouvrir les notifications"><Bell /><span className="notification-dot">4</span></button>{notificationsOpen && <div className="notification-popover"><div className="flex items-center justify-between border-b border-slate-100 px-4 py-3"><strong>Notifications</strong><span className="text-xs text-slate-400">4 non lues</span></div><div className="flex flex-col gap-3 p-4 text-xs"><div><StatusBadge value="Critique" /><p className="mt-1 font-medium">Action corrective échue</p></div><div><StatusBadge value="Attention" /><p className="mt-1 font-medium">Révision documentaire proche</p></div></div><Link href="/notifications" className="block border-t border-slate-100 px-4 py-3 text-center text-xs font-semibold text-blue-700">Voir toutes les notifications</Link></div>}</div><div className="profile-chip" aria-label="Prototype de démonstration"><div className="profile-avatar">DM</div><div className="hidden lg:block text-left"><div className="profile-name">Démonstration</div><div className="profile-role">Mode contrôlé par configuration</div></div><ChevronDown className="hidden size-4 text-slate-400 lg:block" /></div></div>
       </header>
       <main className="app-main">{children}</main>
     </div>
