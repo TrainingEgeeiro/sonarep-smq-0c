@@ -18,7 +18,11 @@ export async function listRisks(query = "") {
     db.select({ id: requirements.id, code: requirements.code, title: requirements.title }).from(requirements).where(isNull(requirements.deletedAt)).orderBy(asc(requirements.code)),
     db.select({ id: documents.id, code: documents.code, title: documents.title }).from(documents).where(isNull(documents.deletedAt)).orderBy(asc(documents.code)),
   ]); return { configured: true as const, risks: rows, processes: processRows, organizations: organizationRows, requirements: requirementRows, documents: documentRows }
-  } catch (error) { console.error("[risks] list failed", error); return { configured: true as const, risks: [], processes: [], organizations: [], requirements: [], documents: [], error: "La base PostgreSQL n'est pas disponible." } }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ""
+    const migrationPending = /(?:relation|table|column).*?(?:risks|processes|organizations|requirements|documents).*?(?:does not exist|missing)/i.test(message)
+    return { configured: true as const, risks: [], processes: [], organizations: [], requirements: [], documents: [], error: migrationPending ? "Le registre des risques est prêt, mais sa migration de base n'est pas encore appliquée." : "La base PostgreSQL n'est pas disponible." }
+  }
 }
 
 export async function createRisk(input: unknown): Promise<RiskResult> {
