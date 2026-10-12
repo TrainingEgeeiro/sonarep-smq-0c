@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { AppShell } from '@/components/app-shell'
 
 export const metadata: Metadata = {
   title: 'Egeeirolys SMQ-360',
@@ -41,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className="antialiased" suppressHydrationWarning>
-        {children}
+        <AppShell>{children}</AppShell>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
