@@ -42,11 +42,18 @@ La page `/` a été ouverte dans le navigateur en viewport desktop 1405x707, en 
 - Aucun écran de connexion ni dépendance Better Auth n'a été introduit.
 - Le contraste et la hiérarchie ont été contrôlés sur les deux thèmes.
 
-## Écarts et suite
+## Vérification Incrément 01B
 
-Le socle ne contient pas encore de persistance, de migrations, d'authentification, de RBAC, de stockage de fichiers ou de workflows métier. Ces absences sont conformes au périmètre du Prompt 00 et doivent rester explicites jusqu'aux incréments correspondants.
+- `pnpm db:generate` : réussi ; migration locale `drizzle/0000_parallel_ironclad.sql` produite.
+- `pnpm db:check` : réussi.
+- `pnpm typecheck` : réussi.
+- `pnpm test` : réussi, 1 fichier et 2 tests.
+- `pnpm build` : réussi avec Next.js 16.4.0.
+- La connexion Neon est configurée dans l'environnement du projet ; le schéma distant observé contient uniquement `neon_auth`. Aucune migration distante n'a été exécutée.
 
-**Conclusion :** le build du socle est validé. L'Incrément 01 n'est pas lancé par ce rapport.
+Les livrables 01B sont `lib/db/schema.ts`, `lib/db/index.ts`, `lib/validation.ts`, `drizzle.config.ts`, `drizzle/` et les documents `07`, `08`, `09` ainsi que `docs/increment-01b-data-foundation.md`. Aucun workflow métier, seed automatique, authentification ou écran de connexion n'a été ajouté.
+
+**Conclusion :** le socle 01B est validé techniquement en local. L'application visuelle 01A est préservée. L'Incrément 01C n'est pas lancé par ce rapport.
 
 ---
 

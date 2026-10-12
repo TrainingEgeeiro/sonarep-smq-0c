@@ -52,4 +52,14 @@ Le socle visuel a été corrigé sans démarrer l'Incrément 01 :
 
 Captures de vérification : `/tmp/agent-browser/smq-360-light.png` et `/tmp/agent-browser/smq-360-dark.png`.
 
+## Incrément 01B — Data Architecture & Persistence Foundation
+
+Le modèle PostgreSQL/Drizzle a été ajouté sans modifier inutilement l'interface 01A : organisations, sites, processus, exigences, sources, documents, révisions, relations N:N et journal d'événements. Les validations Zod couvrent les justifications obligatoires pour `NOT_APPLICABLE` et `OBSOLETE`.
+
+Une migration locale versionnée a été générée dans `drizzle/0000_parallel_ironclad.sql`. Les contrôles réellement exécutés sont `pnpm db:generate`, `pnpm db:check`, `pnpm typecheck`, `pnpm test` (2 tests réussis) et `pnpm build`, tous réussis. Neon est connecté mais aucune migration distante n'a été exécutée ; le schéma distant observé reste limité aux tables `neon_auth` préexistantes.
+
+Les détails sont dans `docs/07-data-model.md`, `docs/08-database-setup.md`, `docs/09-migration-strategy.md` et `docs/increment-01b-data-foundation.md`. Les étapes manuelles restantes sont la revue SQL, le test sur une base isolée et l'autorisation explicite avant application distante.
+
+**Proposition 01C :** référentiels initiaux et premier accès serveur en lecture, après validation du modèle. Ne pas démarrer automatiquement.
+
 **Fin du rapport final.**
