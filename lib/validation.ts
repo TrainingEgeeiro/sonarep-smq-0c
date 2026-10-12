@@ -2,6 +2,23 @@ import { z } from "zod"
 
 export const assessmentStatusSchema = z.enum(["NOT_ASSESSED", "COMPLIANT", "PARTIALLY_COMPLIANT", "NON_COMPLIANT", "NOT_APPLICABLE"])
 export const documentStatusSchema = z.enum(["DRAFT", "IN_REVIEW", "APPROVED", "PUBLISHED", "OBSOLETE"])
+export const processStatusSchema = z.enum(["ACTIVE", "INACTIVE"])
+
+export const processInputSchema = z.object({
+  organizationId: z.string().uuid(),
+  code: z.string().trim().min(1).max(40),
+  name: z.string().trim().min(1).max(160),
+  description: z.string().trim().max(2000).optional(),
+  category: z.string().trim().min(1).max(80),
+  ownerReference: z.string().trim().max(160).optional(),
+  status: processStatusSchema.default("ACTIVE"),
+})
+
+export const processStatusChangeSchema = z.object({
+  id: z.string().uuid(),
+  status: processStatusSchema,
+})
+
 
 export const requirementInputSchema = z.object({
   code: z.string().trim().min(1),
