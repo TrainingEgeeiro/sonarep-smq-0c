@@ -18,6 +18,16 @@ describe('porte de contrôle d’intégration Better Auth', () => {
     expect(result.ok).toBe(false)
   })
 
+  it('bloque une cible sans environnement isolé', () => {
+    const result = checkIntegrationGate({
+      INTEGRATION_TARGET_NAME: 'sonarep-demo-isolated',
+      INTEGRATION_TARGET_AUTHORIZED: 'true',
+      INTEGRATION_TARGET_ENV: '',
+      INTEGRATION_DATABASE_NAME: 'sonarep_demo',
+    })
+    expect(result.ok).toBe(false)
+  })
+
   it('ouvre la porte uniquement avec une cible isolée explicitement autorisée', () => {
     const result = checkIntegrationGate({
       INTEGRATION_TARGET_NAME: 'sonarep-demo-isolated',

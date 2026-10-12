@@ -83,12 +83,12 @@ L’incrément est validé quand la porte est documentée, les tests sont prêts
 
 Les résultats des commandes sont ajoutés ici après exécution dans l’environnement courant. Un contrôle bloqué est conservé comme tel ; il n’est pas transformé en succès par une valeur par défaut.
 
-- `pnpm integration:preflight` : **BLOQUÉ** — les quatre variables de ciblage et d’autorisation ne sont pas présentes dans l’environnement courant.
+- `pnpm integration:preflight` : **BLOQUÉ** — les quatre variables de ciblage et d’autorisation ne sont pas présentes dans l’environnement courant ; aucune écriture distante n’a été tentée.
 - `pnpm typecheck` : **RÉUSSI** — `tsc --noEmit` terminé avec le code 0.
 - `pnpm lint` : **RÉUSSI** — `eslint .` terminé avec le code 0.
-- `pnpm test` : **RÉUSSI** — 5 fichiers et 19 tests passés.
-- `pnpm build` : **RÉUSSI** — Next.js 16.4.0 compilé et 17 pages générées ; avertissement SSL `pg` non bloquant.
-- E2E Better Auth réel : préparé, non exécuté sans cible autorisée.
+- `pnpm test` : **RÉUSSI** — 5 fichiers et 20 tests passés, dont la porte d’intégration.
+- `pnpm build` : **RÉUSSI** — Next.js 16.4.0 compilé et 17 pages générées avec l’environnement projet chargé ; avertissement SSL `pg` non bloquant.
+- E2E Better Auth réel : préparé mais bloqué, non exécuté sans cible isolée formellement autorisée et comptes dédiés.
 
 Aucune migration Neon ni écriture distante n’a été lancée dans cet incrément.
 
