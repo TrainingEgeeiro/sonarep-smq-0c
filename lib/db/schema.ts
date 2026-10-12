@@ -57,6 +57,8 @@ export const requirements = pgTable("requirements", {
   organizationId: uuid("organization_id").notNull().references(() => organizations.id),
   code: text("code").notNull(),
   title: text("title").notNull(),
+  description: text("description"),
+  referenceClause: text("reference_clause"),
   category: text("category").notNull(),
   domain: text("domain"),
   applicability: boolean("applicability").notNull().default(true),
@@ -65,6 +67,16 @@ export const requirements = pgTable("requirements", {
   lastEvaluatedAt: timestamp("last_evaluated_at", { withTimezone: true }),
   ...auditColumns,
 }, (table) => [uniqueIndex("requirements_org_code_unique").on(table.organizationId, table.code), index("requirements_source_idx").on(table.sourceId), index("requirements_status_idx").on(table.status)])
+
+export const requirementAssessments = pgTable("requirement_assessments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  requirementId: uuid("requirement_id").notNull().references(() => requirements.id),
+  status: assessmentStatus("status").notNull(),
+  justification: text("justification"),
+  scopeReference: text("scope_reference"),
+  evaluatedAt: timestamp("evaluated_at", { withTimezone: true }).notNull().defaultNow(),
+  origin: eventOrigin("origin").notNull().default("UNVERIFIED_OPERATOR"),
+}, (table) => [index("requirement_assessments_requirement_idx").on(table.requirementId), index("requirement_assessments_date_idx").on(table.evaluatedAt)])
 
 export const requirementProcesses = pgTable("requirement_processes", {
   requirementId: uuid("requirement_id").notNull().references(() => requirements.id),

@@ -21,13 +21,31 @@ export const processStatusChangeSchema = z.object({
 
 
 export const requirementInputSchema = z.object({
-  code: z.string().trim().min(1),
-  title: z.string().trim().min(1),
+  organizationId: z.string().uuid(),
+  sourceId: z.string().uuid(),
+  code: z.string().trim().min(1).max(80),
+  title: z.string().trim().min(1).max(240),
+  description: z.string().trim().max(4000).optional(),
+  referenceClause: z.string().trim().max(160).optional(),
+  category: z.string().trim().min(1).max(120),
+  domain: z.string().trim().max(120).optional(),
+  applicability: z.boolean().default(true),
   status: assessmentStatusSchema.default("NOT_ASSESSED"),
   justification: z.string().trim().optional(),
 }).superRefine((value, ctx) => {
   if (value.status === "NOT_APPLICABLE" && !value.justification) {
     ctx.addIssue({ code: "custom", path: ["justification"], message: "Une exigence non applicable doit être justifiée." })
+  }
+})
+
+export const assessmentInputSchema = z.object({
+  requirementId: z.string().uuid(),
+  status: assessmentStatusSchema,
+  justification: z.string().trim().optional(),
+  scopeReference: z.string().trim().max(240).optional(),
+}).superRefine((value, ctx) => {
+  if ((value.status === "NOT_APPLICABLE" || value.status === "PARTIALLY_COMPLIANT" || value.status === "NON_COMPLIANT") && !value.justification) {
+    ctx.addIssue({ code: "custom", path: ["justification"], message: "Une justification est obligatoire pour ce statut." })
   }
 })
 
