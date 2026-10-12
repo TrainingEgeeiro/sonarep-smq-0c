@@ -1,6 +1,6 @@
 import type { DemoRole } from './db/schema'
 
-export const demoIdentity = { id: 'demo-user-001', displayName: 'Direction démo', role: 'EXECUTIVE_VIEWER' as DemoRole, isRealAuthentication: false }
+export const demoIdentity = { id: '00000000-0000-0000-0000-000000000001', displayName: 'Direction démo', role: 'EXECUTIVE_VIEWER' as DemoRole, isRealAuthentication: false }
 export const permissionsByRole: Record<DemoRole, string[]> = {
   QMS_ADMIN: ['dashboard.read', 'requirements.read', 'requirements.write', 'compliance.write', 'nonconformities.write', 'actions.write', 'audits.write', 'reports.read', 'demo.admin'],
   QUALITY_MANAGER: ['dashboard.read', 'requirements.read', 'compliance.write', 'nonconformities.write', 'actions.write', 'audits.write', 'reports.read'],
