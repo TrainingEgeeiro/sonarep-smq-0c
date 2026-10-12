@@ -38,6 +38,10 @@ Les fichiers autorisés pour les pièces jointes sont PDF, PNG, JPEG et CSV, ave
 - `pnpm build` : compilation et TypeScript réussis, collecte Next.js bloquée par `BETTER_AUTH_SECRET` absent/non exploitable dans l’environnement de build.
 - Vérification navigateur : route `/documents` redirige correctement vers `/sign-in` sans session ; aucune connexion réelle n’a été tentée.
 
+## Mode de démonstration sans authentification
+
+À la demande du projet, l’authentification est suspendue pour le prototype : les pages métier sont accessibles sans session et l’en-tête affiche explicitement un utilisateur de démonstration. Ce mode ne doit pas être utilisé pour des données réelles, des déploiements de production ou des écritures sensibles. Les services serveur et les règles d’autorisation restent présents pour préparer la réactivation d’un contrôle d’accès réel.
+
 ## Limites restantes
 
 La migration 0003 n’est pas appliquée à une base réelle, le stockage Blob privé n’est pas connecté et le formulaire visible du registre reste une surface de préparation tant qu’une cible autorisée et un stockage privé ne sont pas disponibles. L’accès administrateur de l’incrément 3.8.2 reste séparément bloqué ; il ne constitue pas un contournement pour le contrôle documentaire. L’incrément 3.10 n’est pas commencé.
