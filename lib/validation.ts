@@ -1,61 +1,22 @@
 import { z } from "zod"
 
 export const assessmentStatusSchema = z.enum(["NOT_ASSESSED", "COMPLIANT", "PARTIALLY_COMPLIANT", "NON_COMPLIANT", "NOT_APPLICABLE"])
-export const documentStatusSchema = z.enum(["DRAFT", "IN_REVIEW", "APPROVED", "PUBLISHED", "OBSOLETE"])
+export const documentStatusSchema = z.enum(["DRAFT", "SUBMITTED_FOR_VERIFICATION", "IN_VERIFICATION", "SUBMITTED_FOR_APPROVAL", "APPROVED", "PUBLISHED", "REPLACED", "OBSOLETE", "ARCHIVED"])
+export const documentVersionStatusSchema = z.enum(["DRAFT", "IN_REVIEW", "APPROVED", "PUBLISHED", "REPLACED", "OBSOLETE", "ARCHIVED"])
+export const documentTypeSchema = z.enum(["POLICY", "MANUAL", "PROCEDURE", "WORK_INSTRUCTION", "INSTRUCTION", "FORM", "QUALITY_RECORD", "EXTERNAL_REFERENCE", "OTHER"])
 export const processStatusSchema = z.enum(["ACTIVE", "INACTIVE"])
 
-export const processInputSchema = z.object({
-  organizationId: z.string().uuid(),
-  code: z.string().trim().min(1).max(40),
-  name: z.string().trim().min(1).max(160),
-  description: z.string().trim().max(2000).optional(),
-  category: z.string().trim().min(1).max(80),
-  ownerReference: z.string().trim().max(160).optional(),
-  status: processStatusSchema.default("ACTIVE"),
-})
+export const processInputSchema = z.object({ organizationId: z.string().uuid(), code: z.string().trim().min(1).max(40), name: z.string().trim().min(1).max(160), description: z.string().trim().max(2000).optional(), category: z.string().trim().min(1).max(80), ownerReference: z.string().trim().max(160).optional(), status: processStatusSchema.default("ACTIVE") })
+export const processStatusChangeSchema = z.object({ id: z.string().uuid(), status: processStatusSchema })
+export const requirementInputSchema = z.object({ organizationId: z.string().uuid(), sourceId: z.string().uuid(), code: z.string().trim().min(1).max(80), title: z.string().trim().min(1).max(240), description: z.string().trim().max(4000).optional(), referenceClause: z.string().trim().max(160).optional(), category: z.string().trim().min(1).max(120), domain: z.string().trim().max(120).optional(), applicability: z.boolean().default(true), status: assessmentStatusSchema.default("NOT_ASSESSED"), justification: z.string().trim().optional() }).superRefine((value, ctx) => { if (value.status === "NOT_APPLICABLE" && !value.justification) ctx.addIssue({ code: "custom", path: ["justification"], message: "Une exigence non applicable doit être justifiée." }) })
+export const assessmentInputSchema = z.object({ requirementId: z.string().uuid(), status: assessmentStatusSchema, justification: z.string().trim().optional(), scopeReference: z.string().trim().max(240).optional() }).superRefine((value, ctx) => { if (["NOT_APPLICABLE", "PARTIALLY_COMPLIANT", "NON_COMPLIANT"].includes(value.status) && !value.justification) ctx.addIssue({ code: "custom", path: ["justification"], message: "Une justification est obligatoire pour ce statut." }) })
 
-export const processStatusChangeSchema = z.object({
-  id: z.string().uuid(),
-  status: processStatusSchema,
-})
+export const documentInputSchema = z.object({ organizationId: z.string().uuid().optional(), code: z.string().trim().min(1).max(80), title: z.string().trim().min(1).max(240), description: z.string().trim().max(4000).optional(), type: documentTypeSchema.default("OTHER"), classification: z.enum(["PUBLIC", "INTERNAL", "CONFIDENTIAL"]).default("INTERNAL"), status: documentStatusSchema.default("DRAFT"), obsoleteReason: z.string().trim().optional(), functionalOwnerReference: z.string().trim().max(160).optional(), processOwnerId: z.string().uuid().optional(), nextReviewOn: z.string().date().optional(), requirementIds: z.array(z.string().uuid()).default([]), processIds: z.array(z.string().uuid()).default([]) }).superRefine((value, ctx) => { if (value.status === "OBSOLETE" && !value.obsoleteReason) ctx.addIssue({ code: "custom", path: ["obsoleteReason"], message: "Un document obsolète doit avoir un motif." }) })
+export const documentRevisionSchema = z.object({ documentId: z.string().uuid(), changeSummary: z.string().trim().min(1).max(2000), storageKey: z.string().trim().max(500).optional() })
+export const documentTransitionSchema = z.object({ documentId: z.string().uuid(), transition: z.enum(["SUBMIT_VERIFICATION", "START_VERIFICATION", "SUBMIT_APPROVAL", "APPROVE", "PUBLISH", "ARCHIVE", "OBSOLETE"]) , reason: z.string().trim().max(2000).optional() })
 
-
-export const requirementInputSchema = z.object({
-  organizationId: z.string().uuid(),
-  sourceId: z.string().uuid(),
-  code: z.string().trim().min(1).max(80),
-  title: z.string().trim().min(1).max(240),
-  description: z.string().trim().max(4000).optional(),
-  referenceClause: z.string().trim().max(160).optional(),
-  category: z.string().trim().min(1).max(120),
-  domain: z.string().trim().max(120).optional(),
-  applicability: z.boolean().default(true),
-  status: assessmentStatusSchema.default("NOT_ASSESSED"),
-  justification: z.string().trim().optional(),
-}).superRefine((value, ctx) => {
-  if (value.status === "NOT_APPLICABLE" && !value.justification) {
-    ctx.addIssue({ code: "custom", path: ["justification"], message: "Une exigence non applicable doit être justifiée." })
-  }
-})
-
-export const assessmentInputSchema = z.object({
-  requirementId: z.string().uuid(),
-  status: assessmentStatusSchema,
-  justification: z.string().trim().optional(),
-  scopeReference: z.string().trim().max(240).optional(),
-}).superRefine((value, ctx) => {
-  if ((value.status === "NOT_APPLICABLE" || value.status === "PARTIALLY_COMPLIANT" || value.status === "NON_COMPLIANT") && !value.justification) {
-    ctx.addIssue({ code: "custom", path: ["justification"], message: "Une justification est obligatoire pour ce statut." })
-  }
-})
-
-export const documentInputSchema = z.object({
-  code: z.string().trim().min(1),
-  title: z.string().trim().min(1),
-  status: documentStatusSchema.default("DRAFT"),
-  obsoleteReason: z.string().trim().optional(),
-}).superRefine((value, ctx) => {
-  if (value.status === "OBSOLETE" && !value.obsoleteReason) {
-    ctx.addIssue({ code: "custom", path: ["obsoleteReason"], message: "Un document obsolète doit avoir un motif." })
-  }
-})
+export const riskKindSchema = z.enum(["RISK", "OPPORTUNITY"])
+export const riskStatusSchema = z.enum(["IDENTIFIED", "ASSESSED", "TREATMENT_PLANNED", "IN_TREATMENT", "MONITORED", "CLOSED", "ACCEPTED"])
+export const riskAssessmentSchema = z.object({ probability: z.number().int().min(1).max(5), impact: z.number().int().min(1).max(5), rationale: z.string().trim().max(2000).optional() })
+export const riskInputSchema = z.object({ organizationId: z.string().uuid(), processId: z.string().uuid().optional(), kind: riskKindSchema.default("RISK"), code: z.string().trim().min(1).max(80), title: z.string().trim().min(1).max(240), category: z.string().trim().min(1).max(120), source: z.string().trim().min(1).max(160), description: z.string().trim().min(1).max(4000), consequences: z.string().trim().max(4000).optional(), causes: z.string().trim().max(4000).optional(), existingControls: z.string().trim().max(4000).optional(), treatmentPlan: z.string().trim().max(4000).optional(), ownerReference: z.string().trim().max(160).optional(), treatmentDueOn: z.string().date().optional(), status: riskStatusSchema.default("IDENTIFIED"), initial: riskAssessmentSchema, residual: riskAssessmentSchema.optional(), requirementIds: z.array(z.string().uuid()).default([]), documentIds: z.array(z.string().uuid()).default([]) })
+export const riskStatusChangeSchema = z.object({ id: z.string().uuid(), status: riskStatusSchema, reason: z.string().trim().max(2000).optional() })
