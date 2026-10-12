@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm'
 import { auditEvents, complianceEvaluations, correctiveActions, requirements } from './db/schema'
 import { getDb } from './db'
-import { requirePermission } from './authorization'
+import { AuthorizationError, requirePermission } from './authorization'
 import { complianceEvaluationInput, correctiveActionTransition } from './validation'
 
 export async function createComplianceEvaluation(input: unknown) {
@@ -20,13 +20,35 @@ export async function createComplianceEvaluation(input: unknown) {
 
 export const allowedTransitions: Record<string, string[]> = { PLANNED: ['IN_PROGRESS'], IN_PROGRESS: ['COMPLETED'], COMPLETED: ['EFFECTIVENESS_VERIFIED'], EFFECTIVENESS_VERIFIED: ['CLOSED'], CLOSED: [] }
 export async function transitionCorrectiveAction(input: unknown) {
-  const context = await requirePermission('actions.update')
   const value = correctiveActionTransition.parse(input)
+  const requiredPermission = value.nextStatus === 'EFFECTIVENESS_VERIFIED'
+    ? 'actions.verify'
+    : value.nextStatus === 'CLOSED'
+      ? 'actions.close'
+      : 'actions.update'
+  const context = await requirePermission(requiredPermission)
   const db = getDb()
   return db.transaction(async (tx) => {
-    const [current] = await tx.select({ id: correctiveActions.id, status: correctiveActions.status, organizationId: correctiveActions.organizationId }).from(correctiveActions).where(and(eq(correctiveActions.id, value.actionId), eq(correctiveActions.organizationId, context.organizationId))).limit(1)
+    const [current] = await tx.select({
+      id: correctiveActions.id,
+      status: correctiveActions.status,
+      organizationId: correctiveActions.organizationId,
+      ownerId: correctiveActions.ownerId,
+    }).from(correctiveActions).where(and(eq(correctiveActions.id, value.actionId), eq(correctiveActions.organizationId, context.organizationId))).limit(1)
     if (!current || !allowedTransitions[current.status]?.includes(value.nextStatus)) throw new Error('Transition de statut non autorisée.')
-    const [updated] = await tx.update(correctiveActions).set({ status: value.nextStatus, completionEvidenceReference: value.completionEvidenceReference, effectivenessResult: value.effectivenessResult, updatedAt: new Date(), updatedBy: context.userId }).where(and(eq(correctiveActions.id, value.actionId), eq(correctiveActions.status, current.status))).returning()
+    if (value.nextStatus === 'EFFECTIVENESS_VERIFIED' && current.ownerId === context.userId) {
+      throw new AuthorizationError('FORBIDDEN')
+    }
+    const [updated] = await tx.update(correctiveActions).set({
+      status: value.nextStatus,
+      completionEvidenceReference: value.completionEvidenceReference,
+      effectivenessResult: value.effectivenessResult,
+      verifierId: value.nextStatus === 'EFFECTIVENESS_VERIFIED' ? context.userId : undefined,
+      verifiedOn: value.nextStatus === 'EFFECTIVENESS_VERIFIED' ? new Date().toISOString().slice(0, 10) : undefined,
+      updatedAt: new Date(),
+      updatedBy: context.userId,
+    }).where(and(eq(correctiveActions.id, value.actionId), eq(correctiveActions.organizationId, context.organizationId), eq(correctiveActions.status, current.status))).returning()
+    if (!updated) throw new Error('La ressource a été modifiée entre sa lecture et sa mise à jour.')
     await tx.insert(auditEvents).values({ organizationId: current.organizationId, eventType: 'CORRECTIVE_ACTION_STATUS_CHANGED', entityType: 'corrective_action', entityId: current.id, actorId: context.userId, result: 'SUCCESS', summary: `Statut ${current.status} → ${value.nextStatus}` })
     return updated
   })
