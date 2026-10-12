@@ -3,8 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'SMQ 360 - SONAREP',
-  description: 'SONAREP QMS 360, plateforme professionnelle de pilotage du système de management de la qualité.',
+  title: 'Egeeirolys SMQ-360',
+  description: 'Egeeirolys SMQ-360, plateforme professionnelle de pilotage du système de management de la qualité.',
   generator: 'v0.app',
   icons: {
     icon: [
