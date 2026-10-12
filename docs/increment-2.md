@@ -50,6 +50,56 @@ Pour vérifier la persistance, lire explicitement les références `SONAREP-DEMO
 
 Le seed ne s’exécute jamais au build ni au démarrage.
 
+## Incrément 2B — intégrité référentielle
+
+### Matrice des relations
+
+| Source | Colonne | Cible | Règle | Justification |
+|---|---|---|---|---|
+| `app_users` | `organization_id` | `organizations.id` | `RESTRICT` | Un utilisateur ne peut exister hors organisation. |
+| `user_roles` | `user_id`, `role_id` | `app_users.id`, `roles.id` | `RESTRICT` | Évite les affectations orphelines ; unicité utilisateur/rôle. |
+| tables qualité | `organization_id` | `organizations.id` | `RESTRICT` | Préserve l’historique métier d’une organisation. |
+| `requirements.owner_id` | utilisateur | `app_users.id` | `SET NULL` | Le propriétaire est facultatif ; l’exigence est conservée. |
+| `compliance_evaluations.requirement_id` | exigence | `requirements.id` | `RESTRICT` | Une évaluation ne doit pas perdre son exigence source. |
+| `compliance_evaluations.assessor_id` | utilisateur | `app_users.id` | `SET NULL` | L’identité d’un évaluateur peut devenir indisponible sans supprimer l’évaluation. |
+| `controlled_documents.previous_version_id` | version précédente | `controlled_documents.id` | `RESTRICT` | Préserve la chaîne historique des versions. |
+| `nonconformities.requirement_id` | exigence | `requirements.id` | `RESTRICT` | Une NC liée conserve son référentiel. |
+| `corrective_actions.nonconformity_id` | NC | `nonconformities.id` | `RESTRICT` | Une action corrective dépend de sa NC. |
+| `audits.program_id` | programme | `audit_programs.id` | `SET NULL` | Le programme est facultatif ; l’audit reste historique. |
+| `audit_findings.audit_id` | audit | `audits.id` | `RESTRICT` | Un constat ne peut être orphelin. |
+| `audit_findings.nonconformity_id` | NC | `nonconformities.id` | `SET NULL` | Un constat peut rester lisible si le lien facultatif disparaît. |
+| `audit_events.organization_id` | organisation | `organizations.id` | `RESTRICT` | Le journal d’audit est conservé. |
+| colonnes d’acteur/propriétaire | utilisateur | `app_users.id` | `SET NULL` | Les événements et objets historiques restent disponibles. |
+
+Les références polymorphes de `evidence.linked_entity_id` et `audit_events.entity_id` ne peuvent pas recevoir une FK SQL unique car leur cible dépend de `linked_entity_type`/`entity_type`. Elles restent contrôlées par validation applicative et devront être spécialisées si elles deviennent critiques.
+
+### Contraintes et migration
+
+Le schéma Drizzle ajoute les clés étrangères explicites ci-dessus, des index sur les colonnes de jointure et l’unicité `(user_id, role_id)`. Les suppressions métier sont bloquées par `RESTRICT`/`NO ACTION`, à l’exception des références facultatives documentées en `SET NULL`. La migration doit être générée par `pnpm db:generate`; aucune migration n’est appliquée automatiquement au build ou au déploiement.
+
+### Validation isolée PostgreSQL
+
+Avant toute écriture, l’opérateur doit configurer une base jetable et vérifier `DATABASE_URL`, `DEMO_MODE=true`, `DEMO_WRITE_ENABLED=true`, `DEMO_TARGET=isolated-demo` et `DEMO_DATABASE_NAME` égal au nom réellement retourné par PostgreSQL. En cas d’identité incertaine, interrompre. Ne jamais afficher l’URL ou ses secrets.
+
+Commandes prévues, uniquement après configuration explicite :
+
+```bash
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
+pnpm db:seed
+pnpm typecheck
+pnpm exec eslint .
+pnpm test
+pnpm build
+```
+
+Les deux runs du seed doivent conserver les mêmes identifiants et compter une seule occurrence de chaque référence DEMO. Vérifier ensuite les liens exigence–évaluation, NC–action, programme–audit, audit–constat et les événements `DEMO_SEED`/métier. En cas d’échec, arrêter la procédure, conserver les logs sans secrets et réinitialiser uniquement la base isolée ; ne jamais lancer de suppression sur une base partagée.
+
+### Résultat 2B
+
+La base Neon n’est pas connectée dans cet environnement : les migrations et tests PostgreSQL réels restent donc non exécutés. Les tests unitaires et la génération de migration sont les seuls contrôles locaux autorisés tant qu’une cible isolée n’est pas disponible.
+
 ## Limites
 
 SSO, annuaire, stockage documentaire, hébergement définitif SONAREP, workflows d’approbation, migration de données réelles et systèmes industriels restent hors périmètre.
