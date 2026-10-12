@@ -36,7 +36,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#f4f7fa] text-slate-950 dark:bg-[#071b2d] dark:text-slate-50">
       <div className="mx-auto flex min-h-screen max-w-[1500px]">
         <aside className="hidden w-72 shrink-0 flex-col border-r border-slate-200 bg-[#092b49] px-5 py-6 text-white lg:flex dark:border-slate-700">
-          <div className="flex items-center gap-3 border-b border-white/15 pb-7"><img src="/brand/sonarep-qms360-compact.svg" alt="" className="size-11" /><div><p className="text-sm font-bold tracking-[0.12em]">EGEEIROLYS</p><p className="text-xs font-medium text-[#73e2dc]">SMQ-360</p></div></div>
+          <div className="border-b border-white/15 pb-7"><p className="text-sm font-bold tracking-[0.12em]">EGEEIROLYS</p><p className="text-xs font-medium text-[#73e2dc]">SMQ-360</p></div>
           <nav aria-label="Navigation principale" className="mt-7 flex flex-col gap-1.5 text-sm">
             {navigation.map(([label, Icon, href], index) => <a className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${index === 0 ? "bg-[#13b8b2] text-white shadow-sm" : "text-slate-300 hover:bg-white/10 hover:text-white"}`} href={href} key={label}><Icon className="size-4" aria-hidden="true" /><span>{label}</span></a>)}
           </nav>
