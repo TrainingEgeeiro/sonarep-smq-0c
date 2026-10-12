@@ -3,6 +3,56 @@ import { boolean, date, foreignKey, index, integer, jsonb, pgEnum, pgTable, text
 const timestamps = { createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(), updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull() }
 
 export const userRoleEnum = pgEnum('user_role', ['QMS_ADMIN', 'QUALITY_MANAGER', 'COMPLIANCE_OWNER', 'PRODUCTION_MANAGER', 'ASSESSOR', 'ACTION_OWNER', 'INTERNAL_AUDITOR', 'EXECUTIVE_VIEWER', 'IT_SUPPORT'])
+
+// Better Auth 1.7.7 default PostgreSQL model. These tables intentionally stay separate from the QMS app_users model.
+export const authUser = pgTable('user', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull(),
+  emailVerified: boolean('emailVerified').default(false).notNull(),
+  image: text('image'),
+  createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [uniqueIndex('user_email_unique').on(t.email)])
+
+export const authSession = pgTable('session', {
+  id: text('id').primaryKey(),
+  expiresAt: timestamp('expiresAt', { withTimezone: true }).notNull(),
+  token: text('token').notNull(),
+  createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
+  ipAddress: text('ipAddress'),
+  userAgent: text('userAgent'),
+  userId: text('userId').notNull(),
+}, (t) => [uniqueIndex('session_token_unique').on(t.token), index('session_user_idx').on(t.userId)])
+
+export const authAccount = pgTable('account', {
+  id: text('id').primaryKey(),
+  accountId: text('accountId').notNull(),
+  providerId: text('providerId').notNull(),
+  userId: text('userId').notNull(),
+  accessToken: text('accessToken'),
+  refreshToken: text('refreshToken'),
+  idToken: text('idToken'),
+  accessTokenExpiresAt: timestamp('accessTokenExpiresAt', { withTimezone: true }),
+  refreshTokenExpiresAt: timestamp('refreshTokenExpiresAt', { withTimezone: true }),
+  scope: text('scope'),
+  password: text('password'),
+  createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [index('account_user_idx').on(t.userId), uniqueIndex('account_provider_account_unique').on(t.providerId, t.accountId)])
+
+export const authVerification = pgTable('verification', {
+  id: text('id').primaryKey(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expiresAt', { withTimezone: true }).notNull(),
+  createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [index('verification_identifier_idx').on(t.identifier)])
+
+export const betterAuthTables = { authUser, authSession, authAccount, authVerification }
+
 export const requirementStatusEnum = pgEnum('requirement_status', ['ACTIVE', 'ARCHIVED'])
 export const complianceStatusEnum = pgEnum('compliance_status', ['NOT_ASSESSED', 'COMPLIANT', 'PARTIALLY_COMPLIANT', 'NON_COMPLIANT', 'NOT_APPLICABLE'])
 export const documentStatusEnum = pgEnum('document_status', ['DRAFT', 'IN_REVIEW', 'APPROVED', 'PUBLISHED', 'OBSOLETE'])
