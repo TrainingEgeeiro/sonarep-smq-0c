@@ -2,8 +2,10 @@ import { sql } from "drizzle-orm"
 import { boolean, date, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core"
 
 export const assessmentStatus = pgEnum("assessment_status", ["NOT_ASSESSED", "COMPLIANT", "PARTIALLY_COMPLIANT", "NON_COMPLIANT", "NOT_APPLICABLE"])
-export const documentStatus = pgEnum("document_status", ["DRAFT", "IN_REVIEW", "APPROVED", "PUBLISHED", "OBSOLETE"])
+export const documentStatus = pgEnum("document_status", ["DRAFT", "SUBMITTED_FOR_VERIFICATION", "IN_VERIFICATION", "SUBMITTED_FOR_APPROVAL", "APPROVED", "PUBLISHED", "REPLACED", "OBSOLETE", "ARCHIVED"])
 export const documentClassification = pgEnum("document_classification", ["PUBLIC", "INTERNAL", "CONFIDENTIAL"])
+export const documentType = pgEnum("document_type", ["POLICY", "MANUAL", "PROCEDURE", "WORK_INSTRUCTION", "INSTRUCTION", "FORM", "QUALITY_RECORD", "EXTERNAL_REFERENCE", "OTHER"])
+export const documentVersionStatus = pgEnum("document_version_status", ["DRAFT", "IN_REVIEW", "APPROVED", "PUBLISHED", "REPLACED", "OBSOLETE", "ARCHIVED"])
 export const processStatus = pgEnum("process_status", ["ACTIVE", "INACTIVE"])
 export const eventOrigin = pgEnum("event_origin", ["SYSTEM", "UNVERIFIED_OPERATOR"])
 
@@ -88,9 +90,16 @@ export const documents = pgTable("documents", {
   organizationId: uuid("organization_id").notNull().references(() => organizations.id),
   code: text("code").notNull(),
   title: text("title").notNull(),
+  description: text("description"),
+  type: documentType("type").notNull().default("OTHER"),
+  processOwnerId: uuid("process_owner_id").references(() => processes.id),
+  functionalOwnerReference: text("functional_owner_reference"),
   classification: documentClassification("classification").notNull().default("INTERNAL"),
   status: documentStatus("status").notNull().default("DRAFT"),
   currentRevisionId: uuid("current_revision_id"),
+  nextReviewOn: date("next_review_on"),
+  lastRevisedAt: timestamp("last_revised_at", { withTimezone: true }),
+  archivedAt: timestamp("archived_at", { withTimezone: true }),
   obsoleteReason: text("obsolete_reason"),
   createdOn: date("created_on").notNull().default(sql`CURRENT_DATE`),
   publishedAt: timestamp("published_at", { withTimezone: true }),
@@ -103,10 +112,14 @@ export const documentRevisions = pgTable("document_revisions", {
   documentId: uuid("document_id").notNull().references(() => documents.id),
   revisionNumber: integer("revision_number").notNull(),
   changeSummary: text("change_summary"),
+  status: documentVersionStatus("status").notNull().default("DRAFT"),
   storageKey: text("storage_key"),
   checksum: text("checksum"),
+  origin: eventOrigin("origin").notNull().default("UNVERIFIED_OPERATOR"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
 }, (table) => [uniqueIndex("document_revision_unique").on(table.documentId, table.revisionNumber), index("document_revisions_document_idx").on(table.documentId)])
 
 export const documentProcesses = pgTable("document_processes", {
