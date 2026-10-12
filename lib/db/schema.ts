@@ -36,6 +36,7 @@ export const processes = pgTable("processes", {
   code: text("code").notNull(),
   name: text("name").notNull(),
   description: text("description"),
+  category: text("category").notNull().default("PROCESS"),
   status: processStatus("status").notNull().default("ACTIVE"),
   ownerReference: text("owner_reference"),
   ...auditColumns,

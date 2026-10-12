@@ -1,0 +1,1 @@
+ALTER TABLE "processes" ADD COLUMN "category" text DEFAULT 'PROCESS' NOT NULL;
