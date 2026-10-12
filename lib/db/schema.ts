@@ -11,6 +11,13 @@ export const riskKind = pgEnum("risk_kind", ["RISK", "OPPORTUNITY"])
 export const riskStatus = pgEnum("risk_status", ["IDENTIFIED", "ASSESSED", "TREATMENT_PLANNED", "IN_TREATMENT", "MONITORED", "CLOSED", "ACCEPTED"])
 export const riskLevel = pgEnum("risk_level", ["LOW", "MEDIUM", "HIGH", "CRITICAL"])
 export const riskAssessmentType = pgEnum("risk_assessment_type", ["INITIAL", "RESIDUAL"])
+export const auditType = pgEnum("audit_type", ["INTERNAL", "INSPECTION", "SUPPLIER", "PROCESS", "COMPLIANCE", "FOLLOW_UP"])
+export const auditStatus = pgEnum("audit_status", ["DRAFT", "PLANNED", "IN_PREPARATION", "IN_PROGRESS", "FINDINGS_TO_CONSOLIDATE", "REPORT_PREPARED", "COMPLETED", "CANCELLED"])
+export const findingType = pgEnum("finding_type", ["CONFORMITY", "OBSERVATION", "IMPROVEMENT_OPPORTUNITY", "POTENTIAL_NONCONFORMITY", "CONFIRMED_NONCONFORMITY"])
+export const findingSeverity = pgEnum("finding_severity", ["LOW", "MEDIUM", "HIGH", "CRITICAL"])
+export const findingStatus = pgEnum("finding_status", ["OPEN", "UNDER_REVIEW", "ACCEPTED", "REFERRED_TO_ACTIONS", "CLOSED"])
+export const auditReportStatus = pgEnum("audit_report_status", ["DRAFT", "IN_REVIEW", "VALIDATED"])
+export const auditItemResult = pgEnum("audit_item_result", ["NOT_ASSESSED", "CONFORMING", "PARTIALLY_CONFORMING", "NON_CONFORMING", "NOT_APPLICABLE"])
 export const eventOrigin = pgEnum("event_origin", ["SYSTEM", "UNVERIFIED_OPERATOR"])
 
 const auditColumns = {
@@ -186,6 +193,29 @@ export const riskDocuments = pgTable("risk_documents", {
   riskId: uuid("risk_id").notNull().references(() => risks.id),
   documentId: uuid("document_id").notNull().references(() => documents.id),
 }, (table) => [uniqueIndex("risk_document_unique").on(table.riskId, table.documentId)])
+
+export const auditPrograms = pgTable("audit_programs", {
+  id: uuid("id").defaultRandom().primaryKey(), organizationId: uuid("organization_id").notNull().references(() => organizations.id), code: text("code").notNull(), name: text("name").notNull(), periodStart: date("period_start").notNull(), periodEnd: date("period_end").notNull(), objectives: text("objectives").notNull(), frequencyRationale: text("frequency_rationale"), coordinatorReference: text("coordinator_reference"), status: text("status").notNull().default("DRAFT"), ...auditColumns,
+}, (table) => [uniqueIndex("audit_programs_org_code_unique").on(table.organizationId, table.code), index("audit_programs_period_idx").on(table.periodStart, table.periodEnd)])
+
+export const audits = pgTable("audits", {
+  id: uuid("id").defaultRandom().primaryKey(), programId: uuid("program_id").references(() => auditPrograms.id), organizationId: uuid("organization_id").notNull().references(() => organizations.id), processId: uuid("process_id").references(() => processes.id), reference: text("reference").notNull(), title: text("title").notNull(), type: auditType("type").notNull(), objectives: text("objectives").notNull(), scope: text("scope").notNull(), criteria: text("criteria").notNull(), plannedStart: date("planned_start").notNull(), plannedEnd: date("planned_end").notNull(), actualStart: date("actual_start"), actualEnd: date("actual_end"), teamReferences: text("team_references"), status: auditStatus("status").notNull().default("DRAFT"), notes: text("notes"), conclusion: text("conclusion"), ...auditColumns,
+}, (table) => [uniqueIndex("audits_org_reference_unique").on(table.organizationId, table.reference), index("audits_status_idx").on(table.status), index("audits_period_idx").on(table.plannedStart, table.plannedEnd)])
+
+export const auditProcesses = pgTable("audit_processes", { auditId: uuid("audit_id").notNull().references(() => audits.id), processId: uuid("process_id").notNull().references(() => processes.id) }, (table) => [uniqueIndex("audit_process_unique").on(table.auditId, table.processId)])
+export const auditRequirements = pgTable("audit_requirements", { auditId: uuid("audit_id").notNull().references(() => audits.id), requirementId: uuid("requirement_id").notNull().references(() => requirements.id) }, (table) => [uniqueIndex("audit_requirement_unique").on(table.auditId, table.requirementId)])
+
+export const auditItems = pgTable("audit_items", {
+  id: uuid("id").defaultRandom().primaryKey(), auditId: uuid("audit_id").notNull().references(() => audits.id), code: text("code").notNull(), domain: text("domain").notNull(), question: text("question").notNull(), criteria: text("criteria").notNull(), processId: uuid("process_id").references(() => processes.id), requirementId: uuid("requirement_id").references(() => requirements.id), ownerReference: text("owner_reference"), result: auditItemResult("result").notNull().default("NOT_ASSESSED"), observation: text("observation"), ...auditColumns,
+}, (table) => [uniqueIndex("audit_items_audit_code_unique").on(table.auditId, table.code), index("audit_items_audit_idx").on(table.auditId)])
+
+export const auditFindings = pgTable("audit_findings", {
+  id: uuid("id").defaultRandom().primaryKey(), auditId: uuid("audit_id").notNull().references(() => audits.id), reference: text("reference").notNull(), type: findingType("type").notNull(), description: text("description").notNull(), criterion: text("criterion"), evidenceReference: text("evidence_reference"), severity: findingSeverity("severity").notNull(), processId: uuid("process_id").references(() => processes.id), requirementId: uuid("requirement_id").references(() => requirements.id), riskId: uuid("risk_id").references(() => risks.id), status: findingStatus("status").notNull().default("OPEN"), recommendation: text("recommendation"), correctiveActionReference: text("corrective_action_reference"), ...auditColumns,
+}, (table) => [uniqueIndex("audit_findings_audit_reference_unique").on(table.auditId, table.reference), index("audit_findings_status_idx").on(table.status)])
+
+export const auditReports = pgTable("audit_reports", {
+  id: uuid("id").defaultRandom().primaryKey(), auditId: uuid("audit_id").notNull().references(() => audits.id), summary: text("summary").notNull(), performedScope: text("performed_scope").notNull(), method: text("method").notNull(), findingsSummary: text("findings_summary").notNull(), conclusion: text("conclusion").notNull(), recommendations: text("recommendations"), finalizedAt: timestamp("finalized_at", { withTimezone: true }), status: auditReportStatus("status").notNull().default("DRAFT"), validationReference: text("validation_reference"), ...auditColumns,
+}, (table) => [uniqueIndex("audit_reports_audit_unique").on(table.auditId)])
 
 export const auditEvents = pgTable("audit_events", {
   id: uuid("id").defaultRandom().primaryKey(),
