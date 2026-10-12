@@ -40,4 +40,16 @@ L'Incrément 01 pourra être défini après examen et acceptation de ce rapport.
 
 ---
 
+## Correctif d'identité visuelle — référence commit 37bbefe
+
+Le socle visuel a été corrigé sans démarrer l'Incrément 01 :
+
+- identité produit formulée comme une plateforme professionnelle de SMQ, sans mention « Démonstrateur » dans l'application ;
+- logo dédié SONAREP QMS 360 ajouté en versions horizontale, compacte et icône dans `public/brand/` ;
+- navigation métier et indicateurs différenciés par icônes et couleurs accessibles ;
+- données conservées comme données de développement explicitement signalées ;
+- aucune authentification, base de données, migration ou workflow métier ajouté.
+
+Captures de vérification : `/tmp/agent-browser/smq-360-light.png` et `/tmp/agent-browser/smq-360-dark.png`.
+
 **Fin du rapport final.**

@@ -31,7 +31,16 @@
 
 Aucun test unitaire, intégration ou E2E n'est déclaré dans le projet à ce stade. Ils sont réservés aux incréments concernés ; aucun test fictif n'est présenté comme exécuté.
 
-La page `/` a été ouverte dans le navigateur en viewport desktop 1405x756, en thème sombre. La structure du tableau de bord, le bandeau « Données fictives » et l'absence d'écran de connexion ont été vérifiés visuellement.
+La page `/` a été ouverte dans le navigateur en viewport desktop 1405x707, en thèmes clair et sombre. Le logo compact de la barre latérale, les icônes métier colorées, les indicateurs, le bandeau « Données de développement » et l'absence d'écran de connexion ont été vérifiés visuellement. Captures : `/tmp/agent-browser/smq-360-light.png` et `/tmp/agent-browser/smq-360-dark.png`.
+
+## Correctif d'identité visuelle
+
+- Ressources créées : `public/brand/sonarep-qms360-horizontal.svg`, `sonarep-qms360-compact.svg`, `sonarep-qms360-icon.svg`.
+- Fichiers modifiés : `app/page.tsx`, `app/layout.tsx`, `docs/00-final-report.md`, ce rapport.
+- La description metadata ne présente plus l'application comme un démonstrateur.
+- La mention « Démonstrateur » a été retirée de l'identité de l'application ; les données restent explicitement qualifiées de développement.
+- Aucun écran de connexion ni dépendance Better Auth n'a été introduit.
+- Le contraste et la hiérarchie ont été contrôlés sur les deux thèmes.
 
 ## Écarts et suite
 

@@ -4,7 +4,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'SMQ 360 - SONAREP',
-  description: 'Démonstrateur V1 du système de management de la qualité SONAREP.',
+  description: 'SONAREP QMS 360, plateforme professionnelle de pilotage du système de management de la qualité.',
   generator: 'v0.app',
   icons: {
     icon: [
