@@ -1,0 +1,15 @@
+create type "public"."indicator_status" as enum ('DRAFT','ACTIVE','SUSPENDED','ARCHIVED');
+create type "public"."indicator_direction" as enum ('HIGHER_IS_BETTER','LOWER_IS_BETTER','TARGET_RANGE');
+create type "public"."measurement_frequency" as enum ('WEEKLY','MONTHLY','QUARTERLY','SEMI_ANNUAL','ANNUAL','AD_HOC');
+create type "public"."measurement_status" as enum ('DRAFT','SUBMITTED','VALIDATED','REJECTED');
+create type "public"."indicator_value_kind" as enum ('ENTERED','CALCULATED');
+create table "public"."quality_indicators" ("id" uuid primary key default gen_random_uuid(), "organization_id" uuid not null references "public"."organizations"("id"), "process_id" uuid references "public"."processes"("id"), "code" text not null, "title" text not null, "description" text not null, "definition" text not null, "formula" text not null, "unit" text not null, "direction" "public"."indicator_direction" not null, "target_value" text, "alert_threshold" text, "frequency" "public"."measurement_frequency" not null, "source_description" text not null, "owner_reference" text, "status" "public"."indicator_status" not null default 'DRAFT', "created_at" timestamptz not null default now(), "updated_at" timestamptz not null default now(), "deleted_at" timestamptz);
+create unique index "quality_indicators_org_code_unique" on "public"."quality_indicators" ("organization_id","code");
+create index "quality_indicators_status_idx" on "public"."quality_indicators" ("status");
+create index "quality_indicators_process_idx" on "public"."quality_indicators" ("process_id");
+create table "public"."indicator_measurements" ("id" uuid primary key default gen_random_uuid(), "indicator_id" uuid not null references "public"."quality_indicators"("id"), "period_start" date not null, "period_end" date not null, "observed_value" text not null, "target_value" text, "value_kind" "public"."indicator_value_kind" not null default 'ENTERED', "source_reference" text, "comment" text, "status" "public"."measurement_status" not null default 'DRAFT', "submitted_at" timestamptz, "validated_at" timestamptz, "origin" "public"."event_origin" not null default 'UNVERIFIED_OPERATOR', "created_at" timestamptz not null default now(), "updated_at" timestamptz not null default now(), "deleted_at" timestamptz);
+create unique index "indicator_measurements_period_unique" on "public"."indicator_measurements" ("indicator_id","period_start","period_end");
+create index "indicator_measurements_indicator_idx" on "public"."indicator_measurements" ("indicator_id");
+create index "indicator_measurements_status_idx" on "public"."indicator_measurements" ("status");
+alter table "public"."quality_indicators" enable row level security;
+alter table "public"."indicator_measurements" enable row level security;
