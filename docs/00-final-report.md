@@ -34,7 +34,7 @@ L'absence d'identité fiable et de permissions exécutables interdit de présent
 
 ## Décision de sortie
 
-Le Prompt 00 est complet et son socle compile. Aucun workflow, schéma de base, migration, authentification ou écran de l'Incrément 01 n'est lancé dans cette remise.
+Le Prompt 00 est complet et son socle compile. Un tableau de bord statique de revue a été ajouté pour rendre le cadrage navigable, avec données fictives explicitement signalées. Aucun workflow métier, schéma de base, migration, authentification ou écran de l'Incrément 01 n'est lancé dans cette remise.
 
 L'Incrément 01 pourra être défini après examen et acceptation de ce rapport.
 

@@ -8,6 +8,7 @@
 | Vérification | Commande | Résultat |
 |---|---|---|
 | Build de production | `pnpm build` | Réussi |
+| Vérification navigateur | `agent-browser` sur `/` | Réussi |
 
 ## Résultat du build
 
@@ -19,7 +20,7 @@
 
 ## Vérifications fonctionnelles et structurelles
 
-- La page d'accueil est accessible sans écran de connexion.
+- La page d'accueil est accessible sans écran de connexion et présente le tableau de bord statique du socle.
 - Aucun import Better Auth, Auth.js ou client de session n'est présent dans le socle.
 - Les documents de charte, architecture et limites de sécurité sont présents.
 - Les responsabilités des couches, les choix PostgreSQL/Neon, Drizzle, migrations et stockage privé sont documentés.
@@ -30,7 +31,7 @@
 
 Aucun test unitaire, intégration ou E2E n'est déclaré dans le projet à ce stade. Ils sont réservés aux incréments concernés ; aucun test fictif n'est présenté comme exécuté.
 
-La vérification navigateur interactive n'a pas été utilisée : le contrôle réalisé porte sur la compilation du socle et sur la documentation du Prompt 00.
+La page `/` a été ouverte dans le navigateur en viewport desktop 1405x756, en thème sombre. La structure du tableau de bord, le bandeau « Données fictives » et l'absence d'écran de connexion ont été vérifiés visuellement.
 
 ## Écarts et suite
 
