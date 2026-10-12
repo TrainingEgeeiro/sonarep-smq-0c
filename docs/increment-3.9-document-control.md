@@ -43,7 +43,16 @@ Les fichiers autorisés pour les pièces jointes sont PDF, PNG, JPEG et CSV, ave
 
 ## Mode de démonstration sans authentification
 
-Le mode sans connexion est contrôlé exclusivement par `QMS_DEMO_NO_AUTH=true`. Il est désactivé par défaut et refusé impérativement lorsque `NODE_ENV=production`; il n’est donc pas activé implicitement en Preview ou en Production. Lorsque le flag est actif hors production, les pages métier sont accessibles sans session et l’écran de connexion redirige vers le tableau de bord.
+Le mode sans connexion est contrôlé exclusivement par `QMS_DEMO_NO_AUTH=true`. Sur Vercel, il est accepté uniquement avec `VERCEL_ENV=preview` et refusé avec `VERCEL_ENV=production`, même si `NODE_ENV=production` est également présent dans les deux déploiements. En local, il est accepté uniquement avec `NODE_ENV=development` et sans `VERCEL_ENV`. Toute combinaison inconnue ou incohérente désactive le mode par défaut. Lorsque le flag est actif dans une Preview autorisée ou en développement local, les pages métier sont accessibles sans session et l’écran de connexion redirige vers le tableau de bord.
+
+Configuration Vercel Preview :
+
+```text
+QMS_DEMO_NO_AUTH=true
+VERCEL_ENV=preview
+```
+
+Ne pas créer `NEXT_PUBLIC_QMS_DEMO_NO_AUTH` : ce contrôle reste strictement serveur. Ne pas activer ces variables dans l’environnement Vercel Production.
 
 Les services serveur continuent d’exiger Better Auth et leurs permissions pour toute écriture métier : le mode démo ne crée aucune identité, ne confère aucun rôle QMS et n’expose aucun contournement API. Les fonctions de mutation restent donc indisponibles sans session réelle. Les contrôles de validation, de cohérence, d’organisation et de journalisation restent présents pour la réactivation future.
 
