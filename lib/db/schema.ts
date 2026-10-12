@@ -7,6 +7,10 @@ export const documentClassification = pgEnum("document_classification", ["PUBLIC
 export const documentType = pgEnum("document_type", ["POLICY", "MANUAL", "PROCEDURE", "WORK_INSTRUCTION", "INSTRUCTION", "FORM", "QUALITY_RECORD", "EXTERNAL_REFERENCE", "OTHER"])
 export const documentVersionStatus = pgEnum("document_version_status", ["DRAFT", "IN_REVIEW", "APPROVED", "PUBLISHED", "REPLACED", "OBSOLETE", "ARCHIVED"])
 export const processStatus = pgEnum("process_status", ["ACTIVE", "INACTIVE"])
+export const riskKind = pgEnum("risk_kind", ["RISK", "OPPORTUNITY"])
+export const riskStatus = pgEnum("risk_status", ["IDENTIFIED", "ASSESSED", "TREATMENT_PLANNED", "IN_TREATMENT", "MONITORED", "CLOSED", "ACCEPTED"])
+export const riskLevel = pgEnum("risk_level", ["LOW", "MEDIUM", "HIGH", "CRITICAL"])
+export const riskAssessmentType = pgEnum("risk_assessment_type", ["INITIAL", "RESIDUAL"])
 export const eventOrigin = pgEnum("event_origin", ["SYSTEM", "UNVERIFIED_OPERATOR"])
 
 const auditColumns = {
@@ -131,6 +135,57 @@ export const documentRequirements = pgTable("document_requirements", {
   documentId: uuid("document_id").notNull().references(() => documents.id),
   requirementId: uuid("requirement_id").notNull().references(() => requirements.id),
 }, (table) => [uniqueIndex("document_requirement_unique").on(table.documentId, table.requirementId)])
+
+export const risks = pgTable("risks", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id),
+  processId: uuid("process_id").references(() => processes.id),
+  kind: riskKind("kind").notNull().default("RISK"),
+  code: text("code").notNull(),
+  title: text("title").notNull(),
+  category: text("category").notNull(),
+  source: text("source").notNull(),
+  description: text("description").notNull(),
+  consequences: text("consequences"),
+  causes: text("causes"),
+  existingControls: text("existing_controls"),
+  treatmentPlan: text("treatment_plan"),
+  ownerReference: text("owner_reference"),
+  treatmentDueOn: date("treatment_due_on"),
+  status: riskStatus("status").notNull().default("IDENTIFIED"),
+  initialProbability: integer("initial_probability").notNull(),
+  initialImpact: integer("initial_impact").notNull(),
+  initialScore: integer("initial_score").notNull(),
+  initialLevel: riskLevel("initial_level").notNull(),
+  residualProbability: integer("residual_probability"),
+  residualImpact: integer("residual_impact"),
+  residualScore: integer("residual_score"),
+  residualLevel: riskLevel("residual_level"),
+  ...auditColumns,
+}, (table) => [uniqueIndex("risks_org_code_unique").on(table.organizationId, table.code), index("risks_status_idx").on(table.status), index("risks_process_idx").on(table.processId), index("risks_initial_level_idx").on(table.initialLevel)])
+
+export const riskAssessments = pgTable("risk_assessments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  riskId: uuid("risk_id").notNull().references(() => risks.id),
+  assessmentType: riskAssessmentType("assessment_type").notNull(),
+  probability: integer("probability").notNull(),
+  impact: integer("impact").notNull(),
+  score: integer("score").notNull(),
+  level: riskLevel("level").notNull(),
+  rationale: text("rationale"),
+  assessedAt: timestamp("assessed_at", { withTimezone: true }).notNull().defaultNow(),
+  origin: eventOrigin("origin").notNull().default("UNVERIFIED_OPERATOR"),
+}, (table) => [index("risk_assessments_risk_idx").on(table.riskId), index("risk_assessments_date_idx").on(table.assessedAt)])
+
+export const riskRequirements = pgTable("risk_requirements", {
+  riskId: uuid("risk_id").notNull().references(() => risks.id),
+  requirementId: uuid("requirement_id").notNull().references(() => requirements.id),
+}, (table) => [uniqueIndex("risk_requirement_unique").on(table.riskId, table.requirementId)])
+
+export const riskDocuments = pgTable("risk_documents", {
+  riskId: uuid("risk_id").notNull().references(() => risks.id),
+  documentId: uuid("document_id").notNull().references(() => documents.id),
+}, (table) => [uniqueIndex("risk_document_unique").on(table.riskId, table.documentId)])
 
 export const auditEvents = pgTable("audit_events", {
   id: uuid("id").defaultRandom().primaryKey(),
