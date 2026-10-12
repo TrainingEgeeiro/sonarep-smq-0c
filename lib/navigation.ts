@@ -12,7 +12,7 @@ export const modules: ModuleDefinition[] = [
   { label: "Preuves et enregistrements", description: "Éléments de preuve qualité", href: "/evidence", icon: ListChecks, tone: "text-teal-600 bg-teal-500/10" },
   { label: "Risques et opportunités", description: "Analyse et plans de maîtrise", href: "/risks", icon: AlertTriangle, tone: "text-amber-600 bg-amber-500/10" },
   { label: "Audits", description: "Programmes, constats et suivi", href: "/audits", icon: FileCheck2, tone: "text-violet-600 bg-violet-500/10" },
-  { label: "Constats et non-conformités", description: "Écarts et traitement qualité", href: "/findings", icon: Target, tone: "text-rose-600 bg-rose-500/10" },
+  { label: "Non-conformités", description: "Écarts, causes et actions correctives", href: "/nonconformities", icon: Target, tone: "text-rose-600 bg-rose-500/10" },
   { label: "Actions correctives", description: "Plans d'actions et efficacité", href: "/corrective-actions", icon: ClipboardCheck, tone: "text-orange-600 bg-orange-500/10" },
   { label: "Indicateurs de performance", description: "Mesure et pilotage des résultats", href: "/indicators", icon: BarChart3, tone: "text-fuchsia-600 bg-fuchsia-500/10" },
   { label: "Revues de direction", description: "Préparation et décisions de revue", href: "/management-review", icon: Activity, tone: "text-purple-600 bg-purple-500/10" },

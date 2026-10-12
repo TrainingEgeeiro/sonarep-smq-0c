@@ -18,6 +18,13 @@ export const findingSeverity = pgEnum("finding_severity", ["LOW", "MEDIUM", "HIG
 export const findingStatus = pgEnum("finding_status", ["OPEN", "UNDER_REVIEW", "ACCEPTED", "REFERRED_TO_ACTIONS", "CLOSED"])
 export const auditReportStatus = pgEnum("audit_report_status", ["DRAFT", "IN_REVIEW", "VALIDATED"])
 export const auditItemResult = pgEnum("audit_item_result", ["NOT_ASSESSED", "CONFORMING", "PARTIALLY_CONFORMING", "NON_CONFORMING", "NOT_APPLICABLE"])
+export const nonconformityOrigin = pgEnum("nonconformity_origin", ["AUDIT", "INSPECTION", "PROCESS", "INCIDENT", "COMPLAINT", "OTHER"])
+export const nonconformityClass = pgEnum("nonconformity_class", ["MINOR", "MAJOR", "CRITICAL"])
+export const nonconformityStatus = pgEnum("nonconformity_status", ["DETECTED", "UNDER_EVALUATION", "IMMEDIATE_MEASURE", "ROOT_CAUSE_ANALYSIS", "ACTION_PLANNING", "ACTIONS_IN_PROGRESS", "EFFECTIVENESS_REVIEW", "CLOSED", "REOPENED"])
+export const causeAnalysisStatus = pgEnum("cause_analysis_status", ["NOT_STARTED", "IN_PROGRESS", "COMPLETED"])
+export const correctiveActionStatus = pgEnum("corrective_action_status", ["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"])
+export const actionPriority = pgEnum("action_priority", ["LOW", "MEDIUM", "HIGH", "URGENT"])
+export const effectivenessResult = pgEnum("effectiveness_result", ["NOT_ASSESSED", "EFFECTIVE", "PARTIALLY_EFFECTIVE", "INEFFECTIVE"])
 export const eventOrigin = pgEnum("event_origin", ["SYSTEM", "UNVERIFIED_OPERATOR"])
 
 const auditColumns = {
@@ -216,6 +223,22 @@ export const auditFindings = pgTable("audit_findings", {
 export const auditReports = pgTable("audit_reports", {
   id: uuid("id").defaultRandom().primaryKey(), auditId: uuid("audit_id").notNull().references(() => audits.id), summary: text("summary").notNull(), performedScope: text("performed_scope").notNull(), method: text("method").notNull(), findingsSummary: text("findings_summary").notNull(), conclusion: text("conclusion").notNull(), recommendations: text("recommendations"), finalizedAt: timestamp("finalized_at", { withTimezone: true }), status: auditReportStatus("status").notNull().default("DRAFT"), validationReference: text("validation_reference"), ...auditColumns,
 }, (table) => [uniqueIndex("audit_reports_audit_unique").on(table.auditId)])
+
+export const nonconformities = pgTable("nonconformities", {
+  id: uuid("id").defaultRandom().primaryKey(), organizationId: uuid("organization_id").notNull().references(() => organizations.id), reference: text("reference").notNull(), title: text("title").notNull(), description: text("description").notNull(), origin: nonconformityOrigin("origin").notNull(), auditId: uuid("audit_id").references(() => audits.id), findingId: uuid("finding_id").references(() => auditFindings.id), processId: uuid("process_id").references(() => processes.id), requirementId: uuid("requirement_id").references(() => requirements.id), riskId: uuid("risk_id").references(() => risks.id), detectedOn: date("detected_on").notNull(), classification: nonconformityClass("classification").notNull(), ownerReference: text("owner_reference"), immediateMeasures: text("immediate_measures"), dueOn: date("due_on"), status: nonconformityStatus("status").notNull().default("DETECTED"), ...auditColumns,
+}, (table) => [uniqueIndex("nonconformities_org_reference_unique").on(table.organizationId, table.reference), index("nonconformities_status_idx").on(table.status), index("nonconformities_due_idx").on(table.dueOn)])
+
+export const causeAnalyses = pgTable("cause_analyses", {
+  id: uuid("id").defaultRandom().primaryKey(), nonconformityId: uuid("nonconformity_id").notNull().references(() => nonconformities.id), immediateCauses: text("immediate_causes"), rootCauses: text("root_causes"), method: text("method").notNull(), factualBasis: text("factual_basis").notNull(), retainedCauses: text("retained_causes").notNull(), rationale: text("rationale").notNull(), analyzedOn: date("analyzed_on").notNull(), status: causeAnalysisStatus("status").notNull().default("NOT_STARTED"), origin: eventOrigin("origin").notNull().default("UNVERIFIED_OPERATOR"), ...auditColumns,
+}, (table) => [uniqueIndex("cause_analyses_nc_unique").on(table.nonconformityId)])
+
+export const correctiveActions = pgTable("corrective_actions", {
+  id: uuid("id").defaultRandom().primaryKey(), nonconformityId: uuid("nonconformity_id").notNull().references(() => nonconformities.id), reference: text("reference").notNull(), plannedAction: text("planned_action").notNull(), ownerReference: text("owner_reference").notNull(), dueOn: date("due_on").notNull(), priority: actionPriority("priority").notNull().default("MEDIUM"), resources: text("resources"), status: correctiveActionStatus("status").notNull().default("PLANNED"), completionEvidence: text("completion_evidence"), executedOn: date("executed_on"), verificationResult: text("verification_result"), ...auditColumns,
+}, (table) => [uniqueIndex("corrective_actions_nc_reference_unique").on(table.nonconformityId, table.reference), index("corrective_actions_status_idx").on(table.status), index("corrective_actions_due_idx").on(table.dueOn)])
+
+export const effectivenessReviews = pgTable("effectiveness_reviews", {
+  id: uuid("id").defaultRandom().primaryKey(), nonconformityId: uuid("nonconformity_id").notNull().references(() => nonconformities.id), method: text("method").notNull(), criteria: text("criteria").notNull(), observations: text("observations").notNull(), evidenceReference: text("evidence_reference"), result: effectivenessResult("result").notNull(), recurrenceRisk: text("recurrence_risk"), closureDecision: text("closure_decision").notNull(), decidedOn: date("decided_on").notNull(), origin: eventOrigin("origin").notNull().default("UNVERIFIED_OPERATOR"), ...auditColumns,
+}, (table) => [index("effectiveness_reviews_nc_idx").on(table.nonconformityId), index("effectiveness_reviews_result_idx").on(table.result)])
 
 export const auditEvents = pgTable("audit_events", {
   id: uuid("id").defaultRandom().primaryKey(),
