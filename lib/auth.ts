@@ -1,9 +1,10 @@
 import { betterAuth } from 'better-auth'
 import { Pool } from 'pg'
 
-const secret = process.env.BETTER_AUTH_SECRET_3?.trim()
-if (!secret) throw new Error('BETTER_AUTH_SECRET_3 est requis pour démarrer l’authentification.')
-if (secret.length < 32) throw new Error('BETTER_AUTH_SECRET_3 doit contenir au moins 32 caractères.')
+const configuredSecret = process.env.BETTER_AUTH_SECRET?.trim()
+const legacySecret = process.env.BETTER_AUTH_SECRET_3?.trim()
+const secret = configuredSecret && configuredSecret.length >= 32 ? configuredSecret : legacySecret
+if (!secret) throw new Error('BETTER_AUTH_SECRET doit contenir au moins 32 caractères.')
 
 const authDatabaseUrl = process.env.DATABASE_URL_UNPOOLED?.trim() || process.env.DATABASE_URL?.trim()
 if (!authDatabaseUrl) throw new Error('DATABASE_URL ou DATABASE_URL_UNPOOLED est requis pour démarrer l’authentification.')

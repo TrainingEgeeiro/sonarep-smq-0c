@@ -13,6 +13,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx scripts/seed-demo.ts",
     "db:preflight": "tsx scripts/preflight-demo.ts",
+    "auth:bootstrap": "tsx scripts/bootstrap-admin.ts",
     "integration:preflight": "tsx scripts/integration-preflight.ts",
     "test": "vitest run"
   },
