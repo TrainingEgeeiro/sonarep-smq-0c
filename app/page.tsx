@@ -22,7 +22,7 @@ const modules = [
 ];
 
 const navigation = [
-  ["Vue d'ensemble", Gauge, "#dashboard"], ["Conformité", ShieldCheck, "#conformite"], ["Référentiel qualité", BookOpenCheck, "#referentiel"], ["Documents contrôlés", FileText, "#documents"], ["Risques", AlertTriangle, "#risques"], ["Audits", FileCheck2, "#audits"], ["Non-conformités", Target, "#actions"], ["Actions correctives", ClipboardCheck, "#actions"], ["Indicateurs et pilotage", BarChart3, "#pilotage"], ["Administration", Settings2, "#administration"],
+  ["Vue d'ensemble", Gauge, "#dashboard", "text-cyan-300"], ["Conformité", ShieldCheck, "#conformite", "text-emerald-300"], ["Référentiel qualité", BookOpenCheck, "#referentiel", "text-blue-300"], ["Documents contrôlés", FileText, "#documents", "text-sky-300"], ["Risques", AlertTriangle, "#risques", "text-amber-300"], ["Audits", FileCheck2, "#audits", "text-violet-300"], ["Non-conformités", Target, "#actions", "text-rose-300"], ["Actions correctives", ClipboardCheck, "#actions", "text-orange-300"], ["Indicateurs et pilotage", BarChart3, "#pilotage", "text-indigo-300"], ["Administration", Settings2, "#administration", "text-slate-200"],
 ] as const;
 
 const activities = [
@@ -38,7 +38,7 @@ export default function Home() {
         <aside className="hidden w-72 shrink-0 flex-col border-r border-slate-200 bg-[#092b49] px-5 py-6 text-white lg:flex dark:border-slate-700">
           <div className="border-b border-white/15 pb-7"><p className="text-sm font-bold tracking-[0.12em]">EGEEIROLYS</p><p className="text-xs font-medium text-[#73e2dc]">SMQ-360</p></div>
           <nav aria-label="Navigation principale" className="mt-7 flex flex-col gap-1.5 text-sm">
-            {navigation.map(([label, Icon, href], index) => <a className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${index === 0 ? "bg-[#13b8b2] text-white shadow-sm" : "text-slate-300 hover:bg-white/10 hover:text-white"}`} href={href} key={label}><Icon className="size-4" aria-hidden="true" /><span>{label}</span></a>)}
+            {navigation.map(([label, Icon, href, iconTone], index) => <a className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${index === 0 ? "bg-[#13b8b2] text-white shadow-sm" : "text-slate-300 hover:bg-white/10 hover:text-white"}`} href={href} key={label}><Icon className={`size-4 ${iconTone}`} aria-hidden="true" /><span>{label}</span></a>)}
           </nav>
           <div className="mt-auto rounded-xl border border-amber-300/20 bg-amber-400/10 p-4"><div className="flex items-center gap-2 text-xs font-semibold text-amber-200"><LockKeyhole className="size-3.5" /> Environnement de développement</div><p className="mt-2 text-xs leading-relaxed text-slate-300">Données fictives clairement identifiées. Aucun accès opérationnel.</p></div>
         </aside>
