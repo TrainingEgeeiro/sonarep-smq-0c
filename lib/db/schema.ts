@@ -25,6 +25,11 @@ export const causeAnalysisStatus = pgEnum("cause_analysis_status", ["NOT_STARTED
 export const correctiveActionStatus = pgEnum("corrective_action_status", ["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"])
 export const actionPriority = pgEnum("action_priority", ["LOW", "MEDIUM", "HIGH", "URGENT"])
 export const effectivenessResult = pgEnum("effectiveness_result", ["NOT_ASSESSED", "EFFECTIVE", "PARTIALLY_EFFECTIVE", "INEFFECTIVE"])
+export const indicatorStatus = pgEnum("indicator_status", ["DRAFT", "ACTIVE", "SUSPENDED", "ARCHIVED"])
+export const indicatorDirection = pgEnum("indicator_direction", ["HIGHER_IS_BETTER", "LOWER_IS_BETTER", "TARGET_RANGE"])
+export const measurementFrequency = pgEnum("measurement_frequency", ["WEEKLY", "MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL", "AD_HOC"])
+export const measurementStatus = pgEnum("measurement_status", ["DRAFT", "SUBMITTED", "VALIDATED", "REJECTED"])
+export const indicatorValueKind = pgEnum("indicator_value_kind", ["ENTERED", "CALCULATED"])
 export const eventOrigin = pgEnum("event_origin", ["SYSTEM", "UNVERIFIED_OPERATOR"])
 
 const auditColumns = {
@@ -239,6 +244,14 @@ export const correctiveActions = pgTable("corrective_actions", {
 export const effectivenessReviews = pgTable("effectiveness_reviews", {
   id: uuid("id").defaultRandom().primaryKey(), nonconformityId: uuid("nonconformity_id").notNull().references(() => nonconformities.id), method: text("method").notNull(), criteria: text("criteria").notNull(), observations: text("observations").notNull(), evidenceReference: text("evidence_reference"), result: effectivenessResult("result").notNull(), recurrenceRisk: text("recurrence_risk"), closureDecision: text("closure_decision").notNull(), decidedOn: date("decided_on").notNull(), origin: eventOrigin("origin").notNull().default("UNVERIFIED_OPERATOR"), ...auditColumns,
 }, (table) => [index("effectiveness_reviews_nc_idx").on(table.nonconformityId), index("effectiveness_reviews_result_idx").on(table.result)])
+
+export const qualityIndicators = pgTable("quality_indicators", {
+  id: uuid("id").defaultRandom().primaryKey(), organizationId: uuid("organization_id").notNull().references(() => organizations.id), processId: uuid("process_id").references(() => processes.id), code: text("code").notNull(), title: text("title").notNull(), description: text("description").notNull(), definition: text("definition").notNull(), formula: text("formula").notNull(), unit: text("unit").notNull(), direction: indicatorDirection("direction").notNull(), targetValue: text("target_value"), alertThreshold: text("alert_threshold"), frequency: measurementFrequency("frequency").notNull(), sourceDescription: text("source_description").notNull(), ownerReference: text("owner_reference"), status: indicatorStatus("status").notNull().default("DRAFT"), ...auditColumns,
+}, (table) => [uniqueIndex("quality_indicators_org_code_unique").on(table.organizationId, table.code), index("quality_indicators_status_idx").on(table.status), index("quality_indicators_process_idx").on(table.processId)])
+
+export const indicatorMeasurements = pgTable("indicator_measurements", {
+  id: uuid("id").defaultRandom().primaryKey(), indicatorId: uuid("indicator_id").notNull().references(() => qualityIndicators.id), periodStart: date("period_start").notNull(), periodEnd: date("period_end").notNull(), observedValue: text("observed_value").notNull(), targetValue: text("target_value"), valueKind: indicatorValueKind("value_kind").notNull().default("ENTERED"), sourceReference: text("source_reference"), comment: text("comment"), status: measurementStatus("status").notNull().default("DRAFT"), submittedAt: timestamp("submitted_at", { withTimezone: true }), validatedAt: timestamp("validated_at", { withTimezone: true }), origin: eventOrigin("origin").notNull().default("UNVERIFIED_OPERATOR"), ...auditColumns,
+}, (table) => [uniqueIndex("indicator_measurements_period_unique").on(table.indicatorId, table.periodStart, table.periodEnd), index("indicator_measurements_indicator_idx").on(table.indicatorId), index("indicator_measurements_status_idx").on(table.status)])
 
 export const auditEvents = pgTable("audit_events", {
   id: uuid("id").defaultRandom().primaryKey(),
