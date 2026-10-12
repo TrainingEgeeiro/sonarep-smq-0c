@@ -100,6 +100,67 @@ Les deux runs du seed doivent conserver les mêmes identifiants et compter une s
 
 La base Neon n’est pas connectée dans cet environnement : les migrations et tests PostgreSQL réels restent donc non exécutés. Les tests unitaires et la génération de migration sont les seuls contrôles locaux autorisés tant qu’une cible isolée n’est pas disponible.
 
+## Incrément 2D — sécurisation de l’environnement Neon
+
+L’intégration Neon est connectée, mais le nom `neondb` ne constitue pas une preuve d’isolement organisationnel. Aucune migration ni aucun seed ne doit être exécuté tant qu’un administrateur n’a pas confirmé que la cible est exclusivement réservée à la démonstration SONAREP QMS 360. Aucune ressource distante n’est créée, modifiée ou supprimée automatiquement par cet incrément.
+
+### Préparation par l’administrateur
+
+1. Créer ou sélectionner une base Neon jetable exclusivement dédiée à la démonstration, sans données utiles ni production.
+2. Confirmer son identité réelle avec `current_database()` et son schéma `public`.
+3. Configurer les variables dans l’environnement de développement ou Vercel, sans transmettre `DATABASE_URL` dans le chat :
+
+```text
+DATABASE_URL=<secret géré par l’environnement>
+DEMO_DATABASE_NAME=<nom exact retourné par PostgreSQL>
+DEMO_TARGET=isolated-demo
+DEMO_MODE=true
+DEMO_WRITE_ENABLED=true
+```
+
+`DEMO_WRITE_ENABLED=true` est un interrupteur d’autorisation, pas une preuve d’isolement. La preuve minimale combine l’identité retournée par PostgreSQL, la confirmation explicite de l’administrateur et l’absence de cible de production.
+
+### Prévalidation non destructive
+
+Exécuter d’abord :
+
+```bash
+pnpm db:preflight
+```
+
+Cette commande vérifie la présence des quatre garde-fous, l’absence d’environnement de production, la connexion PostgreSQL, `current_database()` et `current_schema()`. Elle n’applique aucune migration, n’insère aucune donnée et n’affiche jamais l’URL de connexion. Elle s’arrête avec un résultat bloqué si la connexion, l’identité ou une variable est absente ou ambiguë.
+
+La prévalidation technique ne peut pas déterminer seule l’isolement organisationnel chez le fournisseur. L’administrateur doit donc confirmer explicitement que la base est dédiée avant d’autoriser les écritures. Si cette confirmation manque, ne pas exécuter `pnpm db:migrate` ni `pnpm db:seed`.
+
+### Séquence autorisée après confirmation
+
+```bash
+pnpm db:preflight
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
+pnpm db:seed
+```
+
+Les contrôles de type, lint, tests et build peuvent être exécutés sans écriture distante :
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+```
+
+En cas d’échec ou d’identité incertaine, conserver les logs sans secrets et arrêter la procédure. Toute réinitialisation éventuelle doit viser uniquement la base dédiée ; aucune suppression ne doit être lancée sur une base partagée.
+
+### État de livraison 2D
+
+- Contrôles documentés : garde-fous, identité PostgreSQL, schéma, production, procédure d’arrêt.
+- Action locale ajoutée : `pnpm db:preflight` non destructive.
+- Migrations et seed : non exécutés dans cet incrément.
+- Confirmation administrateur de l’isolement : en attente.
+- Configuration de production : inchangée.
+
 ## Limites
 
 SSO, annuaire, stockage documentaire, hébergement définitif SONAREP, workflows d’approbation, migration de données réelles et systèmes industriels restent hors périmètre.
