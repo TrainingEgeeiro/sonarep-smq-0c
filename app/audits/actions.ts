@@ -20,8 +20,7 @@ export async function listAudits(query = "") {
   ]); return { configured: true as const, audits: rows, organizations: orgs, processes: processRows, requirements: requirementRows, metrics: { total: rows.length, active: rows.filter(row => !["COMPLETED", "CANCELLED"].includes(row.status)).length, findings: Number(findingCount[0]?.count ?? 0), completed: rows.filter(row => row.status === "COMPLETED").length } }
   } catch (error) {
     const message = error instanceof Error ? error.message : ""
-    const migrationPending = /relation .*audit_findings.*does not exist|relation .*audits.*does not exist/i.test(message)
-    if (!migrationPending) console.error("[audits] list failed", error)
+    const migrationPending = /(?:relation|table|column).*?(?:audit_findings|audits|organizations|processes|requirements).*?(?:does not exist|不存在|missing)/i.test(message)
     return { configured: true as const, audits: [], organizations: [], processes: [], requirements: [], metrics: { total: 0, active: 0, findings: 0, completed: 0 }, error: migrationPending ? "Le module Audits est prêt, mais sa migration de base n'est pas encore appliquée." : "La base PostgreSQL n'est pas disponible." }
   }
 }
