@@ -16,10 +16,15 @@ La présence de Neon et du schéma live ne vaut pas autorisation d’écriture. 
 
 ## Contrôles exécutés
 
-- `pnpm integration:preflight` : **BLOQUÉ**.
-- `pnpm typecheck` : **RÉUSSI**.
-- `pnpm lint` : **RÉUSSI**.
-- `pnpm test` : **RÉUSSI** — 5 fichiers, 20 tests.
+- Vérification de présence des variables requises : **10/10 absentes** ; aucune valeur n’a été affichée.
+- `pnpm integration:preflight` : **BLOQUÉ** avec les quatre contrôles suivants :
+  - Cible identifiée : **BLOQUÉ** — `INTEGRATION_TARGET_NAME` est requis.
+  - Cible explicitement autorisée : **BLOQUÉ** — `INTEGRATION_TARGET_AUTHORIZED=true` est requis.
+  - Environnement non productif : **BLOQUÉ** — un environnement non productif est requis ; aucun environnement n’a été détecté.
+  - Base identifiée : **BLOQUÉ** — `INTEGRATION_DATABASE_NAME` est requis.
+- Nom logique de la cible : **non détecté**.
+- Environnement détecté : **non détecté**.
+- Cohérence de la base : **non évaluable** sans nom de base autorisé.
 - Bootstrap admin : **NON EXÉCUTÉ**.
 - Migration Better Auth : **NON EXÉCUTÉE**.
 - Parcours navigateur sign-in/session/reload/sign-out : **NON EXÉCUTÉ**.
@@ -60,4 +65,6 @@ Configurer ces variables dans l’environnement Preview/Development correspondan
 
 ## État final
 
-Aucun compte administrateur n’a été créé. Aucune migration, insertion, modification, réinitialisation de mot de passe ou autre écriture Neon n’a été effectuée. Le critère de sortie de l’incrément 3.8.2 n’est donc pas atteint ; le blocage est volontaire et conforme aux garde-fous du protocole.
+Aucun nom logique de cible, environnement non productif ou nom de base n’a été détecté. La cible ne peut donc pas être confirmée comme explicitement autorisée et la cohérence de base ne peut pas être validée. Correction nécessaire : renseigner dans l’environnement sécurisé les quatre variables `INTEGRATION_TARGET_NAME`, `INTEGRATION_TARGET_AUTHORIZED=true`, `INTEGRATION_TARGET_ENV` non productif et `INTEGRATION_DATABASE_NAME`, puis relancer uniquement `pnpm integration:preflight`.
+
+Aucun compte administrateur n’a été créé. Aucune migration, insertion, modification, réinitialisation de mot de passe ou autre écriture Neon n’a été effectuée. La migration historique `drizzle/0002_better_auth_schema.sql` n’a pas été appliquée et ne sera pas appliquée au schéma `neon_auth` par ce protocole. Le critère de sortie de l’incrément 3.8.2 n’est donc pas atteint ; le blocage est volontaire et conforme aux garde-fous du protocole.
