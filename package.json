@@ -12,15 +12,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx scripts/seed-demo.ts",
-    "db:preflight": "tsx scripts/preflight-demo.ts",
-    "auth:bootstrap": "tsx scripts/bootstrap-admin.ts",
-    "integration:preflight": "tsx scripts/integration-preflight.ts",
     "test": "vitest run"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
     "@vercel/analytics": "1.6.1",
-    "better-auth": "^1.7.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.4",
