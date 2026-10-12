@@ -31,14 +31,14 @@ export default async function ModulePage({ params }: { params: Promise<{ module:
             <LockKeyhole className="hidden size-8 text-slate-400 sm:block" aria-hidden="true" />
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
-            <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-[#0d2b44]">
+            <Link href={`/${slug}?detail=overview`} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-[#13b8b2] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#13b8b2] dark:border-slate-700 dark:bg-[#0d2b44]">
               <p className="text-sm font-semibold">Page active</p>
-              <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">La navigation vers ce domaine fonctionne. Les données opérationnelles apparaîtront après activation de la source persistée.</p>
-            </article>
-            <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-[#0d2b44]">
+              <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">La navigation vers ce domaine fonctionne. Ouvrir la fiche détaillée du périmètre métier.</p>
+            </Link>
+<Link href={`/${slug}?detail=scope`} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-[#13b8b2] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#13b8b2] dark:border-slate-700 dark:bg-[#0d2b44]">
               <p className="text-sm font-semibold">Périmètre</p>
               <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">Aucune donnée fictive n&apos;est présentée comme un résultat réel sur cette page.</p>
-            </article>
+            </Link>
             <Link href="/" className="group rounded-xl border border-[#13b8b2]/40 bg-[#13b8b2]/5 p-6 transition hover:border-[#13b8b2] hover:bg-[#13b8b2]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#13b8b2]">
               <p className="flex items-center justify-between text-sm font-semibold text-[#078f91]">Explorer un autre domaine <ArrowUpRight className="size-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" /></p>
               <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Revenir au cockpit pour ouvrir un autre module.</p>
